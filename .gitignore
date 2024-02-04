@@ -4,6 +4,9 @@ node_modules/
 # Ignore build output
 build/
 
+# Ignore databases file
+databases.db
+
 # Ignore IDE and editor files
 .vscode/
 .idea/
