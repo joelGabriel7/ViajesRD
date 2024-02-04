@@ -61,15 +61,17 @@ class Agencies(Base):
     phone = Column(String(length=20))
     email = Column(String(length=255)) 
     logo = Column(String(length=255))
-
     legal_registration_number = Column(String(length=255),unique=True, nullable=False)
     license_number = Column(String(length=255), unique=True, nullable=False)
     license_expiration_date = Column(Date(), default=func.current_date())
     certications = Column(String(length=255))
-    insurance_number = Column(String(length=255, unique=True, nullable=False))
+    insurance_number = Column(String(length=255))
     insurance_provider = Column(String(length=255))
     legal_contact_name = Column(String(length=255))
-    
+
+    status = Column(Enum('active', 'inactive', name='status'), default='active')
+
+
     excursions = relationship("Excursions", back_populates="agency") 
     user = relationship("Users", back_populates="agency")
 
