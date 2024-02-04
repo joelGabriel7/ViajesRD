@@ -30,3 +30,5 @@ package-lock.json
 
 # Ignore yarn.lock for Yarn
 yarn.lock
+
+__pycache__/
