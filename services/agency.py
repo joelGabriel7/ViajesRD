@@ -6,13 +6,13 @@ from schemas.agency import AgencyCreate, AgencyUpdate
 
 
 async def create_agency(db:Session ,agency: AgencyCreate):
-    agency_exist= await db.query(Agencies).filter(Agencies.legal_registration_number==agency.legal_registration_number).first()
+    agency_exist=  db.query(Agencies).filter(Agencies.legal_registration_number==agency.legal_registration_number).first()
     if agency_exist:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Agency already exist with this legal registration number")
     new_agency= Agencies(**agency.model_dump())
     db.add(new_agency)
-    await db.commit()
-    await db.refresh(new_agency)
+    db.commit()
+    db.refresh(new_agency)
     return new_agency    
 
 async def get_all_agencies(db:Session):
@@ -31,7 +31,7 @@ async def get_agency_by_id(db:Session, agency_id:int):
     agency =  db.query(Agencies).filter(Agencies.id==agency_id).first()
     if agency is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agency not found")
-    return await agency
+    return agency
 
 async def update_agency(db:Session, agency_id:int, agency: AgencyUpdate):
     agency_to_update = await get_agency_by_id(db, agency_id)
@@ -39,9 +39,16 @@ async def update_agency(db:Session, agency_id:int, agency: AgencyUpdate):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agency not found")
     for var, value in vars(agency).items():
        setattr(agency_to_update, var, value) if value else None
-    await db.commit()
-    await db.refresh(agency_to_update)
+    db.commit()
+    db.refresh(agency_to_update)
     return agency_to_update
 
+async def delete_agency(db:Session, agency_id:int):
+    agency_to_delete = await get_agency_by_id(db, agency_id)
+    if agency_to_delete is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agency not found")
+    db.delete(agency_to_delete)
+    db.commit()
+    return {"message":"Agency deleted successfully"}
 
 

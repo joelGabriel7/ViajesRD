@@ -12,6 +12,7 @@ class AgencyBase(BaseModel):
     certications: str
     legal_registration_number:str= Field( min_length=0, max_length=255)
     insurance_number: str = Field(min_length=0, max_length=255)
+    license_number: str = Field(min_length=0, max_length=255)
     insurance_provider: str
     legal_contact_name: str
 
