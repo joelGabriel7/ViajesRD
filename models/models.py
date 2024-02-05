@@ -34,7 +34,7 @@ class Clients(Base):
     address = Column(String(length=255))
     
     user = relationship("Users", back_populates="client")
-    reservation = relationship("Reservations", back_populates="client")
+    reservations = relationship("Reservations", back_populates="client")  # Cambiado de 'reservation' a 'reservations'
 
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
@@ -72,8 +72,8 @@ class Agencies(Base):
     status = Column(Enum('active', 'inactive', name='status'), default='active')
 
 
-    excursions = relationship("Excursions", back_populates="agency") 
-    user = relationship("Users", back_populates="agency")
+    excursions = relationship("Excursions", back_populates="agency")  # Cambiado de 'agencies' a 'agency'
+    users = relationship("Users", back_populates="agency")  # Cambiado de 'user' a 'users'
 
     
     created_at = Column(Date(), default=func.current_date())
@@ -91,8 +91,8 @@ class Reservations(Base):
     client_id = Column(Integer, ForeignKey('clients.id'))
     excursion_id = Column(Integer, ForeignKey('excursions.id'))
 
-    client = relationship("Clients", back_populates="reservation")
-    excursion = relationship("Excursions", back_populates="reservation")
+    client = relationship("Clients", back_populates="reservations")  # Cambiado de 'reservation' a 'reservations'
+    excursion = relationship("Excursions", back_populates="reservations")  # Cambiado de 'reservation' a 'reservations'
     payment = relationship("Payments", back_populates="reservation")
 
     created = Column(Date(), default=func.current_date())
@@ -113,8 +113,10 @@ class Excursions(Base):
     agency_id = Column(Integer, ForeignKey('agencies.id'))
     tourist_place_id = Column(Integer, ForeignKey('tourist_places.id'))
 
-    agencies = relationship("Agency", back_populates="excursions")
+    agency = relationship("Agencies", back_populates="excursions")  # Cambiado de 'agencies' a 'agency'
     tourist_place = relationship("TouristPlace", back_populates="excursions")
+    reservations = relationship("Reservations", back_populates="excursion")  # Cambiado de 'reservation' a 'reservations'
+    
 
     created = Column(Date, server_default=func.now())
     updated = Column(Date, onupdate=func.now())
@@ -148,7 +150,7 @@ class Users(Base):
     agency_id = Column(Integer, ForeignKey('agencies.id'))
     client_id = Column(Integer, ForeignKey('clients.id'))
 
-    agency = relationship("Agencies", back_populates="user")
+    agency = relationship("Agencies", back_populates="users")
     client = relationship("Clients", back_populates="user")
 
     created = Column(Date(), default=func.current_date())
