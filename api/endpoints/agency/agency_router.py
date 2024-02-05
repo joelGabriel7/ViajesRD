@@ -1,21 +1,12 @@
 from fastapi import APIRouter,Depends
 from sqlalchemy.orm import Session
 from services.agency import create_agency, delete_agency, get_all_agencies, get_agency_by_id, get_ten_agencies, update_agency
-from models.models import Agencies
 from data.db import *
 from schemas.agency import AgencyUpdate,AgencyCreate, Agency
-
+from api.deps.get_db import get_db
 
 
 router = APIRouter(prefix='/agencies',tags=["Agency"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @router.post("/create", response_model=AgencyCreate, status_code=201)
 async def create_agency_endpoint(agency: AgencyCreate, db: Session = Depends(get_db)):
