@@ -45,7 +45,7 @@ class Categories(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(length=150))  
     description = Column(String(length=255))
-    
+    code_category = Column(String(length=150), unique=True, nullable=False)
     tourist_places = relationship("TouristPlace", back_populates="category")
 
     created_at = Column(Date(), default=func.current_date())
