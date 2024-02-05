@@ -1,16 +1,17 @@
 
-from pydantic import BaseModel, EmailStr,Optional,Field
+from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
 class AgencyBase(BaseModel):
-    name: Field(str, min_length=0, max_length=20)
+    name: str = Field(min_length=0, max_length=20)
     address: Optional[str] = None
     phone: str
     email: EmailStr
     logo: Optional[str] = None
     certications: str
-    legal_registration_number: Field(str, min_length=0, max_length=255)
-    insurance_number: Field(str, min_length=0, max_length=255)
+    legal_registration_number:str= Field( min_length=0, max_length=255)
+    insurance_number: str = Field(min_length=0, max_length=255)
     insurance_provider: str
     legal_contact_name: str
 
@@ -25,7 +26,7 @@ class Agency(AgencyBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AgencyUpdate(AgencyBase):
     pass
