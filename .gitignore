@@ -6,7 +6,7 @@ build/
 test/
 # Ignore databases file
 databases.db
-
+migrations/
 # Ignore IDE and editor files
 .vscode/
 .idea/

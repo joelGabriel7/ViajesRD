@@ -32,6 +32,7 @@ class Clients(Base):
     phone = Column(String(length=20))
     email = Column(String(length=255))  
     address = Column(String(length=255))
+    client_code = Column(String(length=150), unique=True, nullable=False)
     
     user = relationship("Users", back_populates="client")
     reservations = relationship("Reservations", back_populates="client")  # Cambiado de 'reservation' a 'reservations'
