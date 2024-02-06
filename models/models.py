@@ -14,12 +14,12 @@ class TouristPlace(Base):
     image = Column(String)
     location = Column(String)
 
-    category_id = Column(Integer, ForeignKey('categories.id'))
+    category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
     category = relationship("Categories", back_populates="tourist_places")
     excursions = relationship("Excursions", back_populates="tourist_place")
     
-    created = Column(Date, server_default=func.now())
-    updated = Column(Date, onupdate=func.now())
+    created = Column(Date, default=func.current_date())
+    updated = Column(Date, default=func.current_date())
       
 class Clients(Base):
     __tablename__ = "clients"
