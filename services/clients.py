@@ -24,22 +24,21 @@ async def get_clients(db:Session, skip:int, limit:int):
     return clients
 
 async def get_client_by_id(db:Session, client_id:int):
-    client  = db.query(Clients).fliter(Clients.id == client_id).first()
+    client  = db.query(Clients).filter(Clients.id == client_id).first()
     if client is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
     return client
 
 async def update_client(db:Session, client_id:int, client:ClientUpdated):
-    client = await get_client_by_id(db, client_id)
-    if client is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
-    
-    for key, value in client.dict().items():
-        if value is not None:
-            setattr(client, key, value)
+    client_update = await get_client_by_id(db, client_id)    
+    for key, value in vars(client).items(): 
+        if value:
+            setattr(client_update, key, value)
+        else:
+             return None
     db.commit()
-    db.refresh(client)
-    return client
+    db.refresh(client_update)
+    return client_update
 
 async def delete_client(db:Session,  client_id):
     client = await get_client_by_id(db, client_id)
