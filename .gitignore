@@ -3,7 +3,10 @@ node_modules/
 
 # Ignore build output
 build/
-
+test/
+# Ignore databases file
+databases.db
+migrations/
 # Ignore IDE and editor files
 .vscode/
 .idea/
@@ -25,8 +28,13 @@ venv
 *.so
 *.dylib
 
+alembic.ini
+alembic/
+.pytest_cache/
 # Ignore package-lock.json for npm
 package-lock.json
 
 # Ignore yarn.lock for Yarn
 yarn.lock
+
+__pycache__/
