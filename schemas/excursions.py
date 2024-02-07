@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import date, datetime
 from schemas.agency import AgencyBase, AgencyCreate
 
-from schemas.tourist_place import TouristPlaceBase, TouristPlaceCreate
+from schemas.tourist_place import CategoryName, TouristPlaceBase, TouristPlaceCreate
 
 
 class ExcusionsBase(BaseModel):
@@ -24,14 +24,18 @@ class AgencyName(BaseModel):
     legal_registration_number:str= Field( min_length=0, max_length=255)
     license_number: str = Field(min_length=0, max_length=255)
 
-class TouristPlaceName(BaseModel):
+
+
+class TouristPlaceForExcursion(BaseModel):
     name: str
-    code_category: str
-    
+    location: str
+    category: CategoryName
+
 
 class ExcursionsWithTouristPlaceAndAgency(ExcusionsBase):
+    id: int
     agency: AgencyName
-    tourist_place: TouristPlaceName
+    tourist_place: TouristPlaceForExcursion
     
 class Excursions(ExcusionsBase):
     id: int

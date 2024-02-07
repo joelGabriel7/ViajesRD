@@ -1,9 +1,9 @@
 from schemas.excursions import *
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from models.models import Excursions as excursions_model
 from api.deps.helpers.filter_agency_and_tourist_place import validate_agency_exites, validate_tourist_place_exites
-from api.deps.helpers.show_agency_and_Tplace import get_excursion_by_id_with_agency_and_tourist_place
+
 
 
 
@@ -22,13 +22,13 @@ async def create_excursion(db:Session, excursion:ExcursionsCreate):
 
 
 async def get_all_excursions(db:Session):
-    excursions =  db.query(excursions_model).all()
+    excursions =  db.query(excursions_model).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).all()
     if excursions is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No excursions found")
     return excursions
 
 async def get_excursion_by_id(db:Session, excursion_id:int):
-    excursion =  db.query(excursions_model).filter(excursions_model.id == excursion_id).first()
+    excursion =  db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
     if excursion is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No excursions found")
     return excursion

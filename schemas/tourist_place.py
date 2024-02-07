@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional,List
-from.category import Category, CategoryBase
+from typing import Optional
+
 
 
 class TouristPlaceBase(BaseModel):
@@ -10,18 +10,18 @@ class TouristPlaceBase(BaseModel):
     image: Optional[str] = None
     location: str= Field(min_length=1)
     category_id: int
-    # category: Optional[Category] = None
 
 class TouristPlaceCreate(TouristPlaceBase):
     pass
+
 
 class CategoryName(BaseModel):
     name: str
     code_category: str
 
 class TouristPlaceWithCategory(TouristPlaceBase):
+    id:int
     category: CategoryName
-
 
 class TouristPlace(TouristPlaceBase):   
     id: int
