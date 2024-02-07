@@ -105,7 +105,7 @@ class Excursions(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    date_excursion  = Column(Date, default=func.now())
+    date_excursion  = Column(Date(), default=func.now())
     duration_excursion = Column(Integer, default=0)
     price = Column(Float, default=0.0)
     available_places = Column(Integer, default=0)
@@ -119,8 +119,8 @@ class Excursions(Base):
     reservations = relationship("Reservations", back_populates="excursion")  # Cambiado de 'reservation' a 'reservations'
     
 
-    created = Column(Date, server_default=func.now())
-    updated = Column(Date, onupdate=func.now())
+    created = Column(Date(), default=func.current_date())
+    updated = Column(Date(), default=func.current_date())
     
 class Payments(Base):
     __tablename__ = "payments"
