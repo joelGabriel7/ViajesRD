@@ -1,7 +1,6 @@
 from schemas.clients import *
-from models.models import Clients
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status,APIRouter, Depends
+from fastapi import status,APIRouter, Depends
 from api.deps.get_db import get_db
 from services.clients import *
 router = APIRouter(prefix='/clients', tags=['Clients'])
