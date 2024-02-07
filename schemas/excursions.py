@@ -1,6 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import date, datetime
+from schemas.agency import AgencyBase, AgencyCreate
+
+from schemas.tourist_place import TouristPlaceBase, TouristPlaceCreate
 
 
 class ExcusionsBase(BaseModel):
@@ -15,7 +18,21 @@ class ExcusionsBase(BaseModel):
 class ExcursionsCreate(ExcusionsBase):
     pass
 
+class AgencyName(BaseModel):
+    name: str
+    email: EmailStr
+    legal_registration_number:str= Field( min_length=0, max_length=255)
+    license_number: str = Field(min_length=0, max_length=255)
 
+class TouristPlaceName(BaseModel):
+    name: str
+    code_category: str
+    
+
+class ExcursionsWithTouristPlaceAndAgency(ExcusionsBase):
+    agency: AgencyName
+    tourist_place: TouristPlaceName
+    
 class Excursions(ExcusionsBase):
     id: int
     created: datetime

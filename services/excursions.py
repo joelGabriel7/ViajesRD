@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models.models import Excursions as excursions_model
 from api.deps.helpers.filter_agency_and_tourist_place import validate_agency_exites, validate_tourist_place_exites
-
+from api.deps.helpers.show_agency_and_Tplace import get_excursion_by_id_with_agency_and_tourist_place
 
 
 
@@ -54,3 +54,5 @@ async def delete_excursion(db:Session, excursion_id:int):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return {"detail": "Excursion deleted successfully"}
 
+async def get_excursion_by_id_with_agency_and_tourist_place(db:Session, excursion_id:int):
+    return await get_excursion_by_id_with_agency_and_tourist_place(db,excursion_id)

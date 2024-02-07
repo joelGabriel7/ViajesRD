@@ -57,12 +57,4 @@ async def delete_tourist_place(db:Session, tourist_place:int):
     return {"message":"Tourist place deleted successfully"}
 
 
-async def get_all_toruist_place_with_category(db:Session):
-    return db.query(TouristPlace).options(joinedload(TouristPlace.category)).all()
-
-async def get_tourist_place_by_id_with_category(db:Session, tourist_place_id:int):
-    place_id = db.query(TouristPlace).options(joinedload(TouristPlace.category)).filter(TouristPlace.id == tourist_place_id).first()
-    if place_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tourist place not found")
-    return place_id
 

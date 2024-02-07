@@ -1,4 +1,5 @@
 from pytest import Session
+from api.deps.helpers.show_agency_and_Tplace import get_excursion_by_id_with_agency_and_tourist_place
 from schemas.excursions import *
 from fastapi import Depends, status, APIRouter
 from api.deps.get_db import get_db
@@ -26,3 +27,7 @@ async def update_excursion_endpoint(excursion_id:int, new_excursion:ExcursionsUp
 @excursion_router.delete("/delete/{excursion_id}", status_code=status.HTTP_200_OK)
 async def delete_excursion_endpoint(excursion_id:int, db:Session = Depends(get_db)):
     return await delete_excursion(db,excursion_id)
+
+@excursion_router.get("/list/{excursion_id}/agency_tourist_place", response_model=ExcursionsWithTouristPlaceAndAgency, status_code=status.HTTP_200_OK)
+async def get_excursion_by_id_with_agency_and_tourist_place_endpoint(excursion_id:int,db:Session = Depends(get_db) ):
+    return await get_excursion_by_id_with_agency_and_tourist_place(db,excursion_id)
