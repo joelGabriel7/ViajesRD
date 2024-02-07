@@ -12,24 +12,21 @@ class TouristPlaceBase(BaseModel):
     category_id: int
     # category: Optional[Category] = None
 
-
-
-
 class TouristPlaceCreate(TouristPlaceBase):
     pass
 
-
+class CategoryName(BaseModel):
+    name: str
+    code_category: str
 
 class TouristPlaceWithCategory(TouristPlaceBase):
-    category: CategoryBase
+    category: CategoryName
+
 
 class TouristPlace(TouristPlaceBase):   
     id: int
     created: datetime
     updated: datetime
-
-
- 
 
     class Config:
         from_attributes = True
