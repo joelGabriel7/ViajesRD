@@ -3,4 +3,5 @@ uvicorn==0.26.0
 sqlalchemy[asyncio,mypy]==2.0.25
 email_validator==2.1.0
 alembic == 1.13.1
-python-multipart
+python-multipart == 0.0.7
+passlib[bcrypt] == 1.7.4

@@ -1,11 +1,19 @@
 from sqlalchemy.orm import Session
 from models.models  import Agencies
 from fastapi import HTTPException, status
-
+from schemas.users import *
 from schemas.agency import AgencyCreate, AgencyUpdate
+from services.users import create_user
 
 
 async def create_agency(db:Session ,agency: AgencyCreate):
+    # Primero, intenta crear el usuario para la agencia
+    user_data = UserCreate(
+        username=agency.name.replace(" ", "").lower(), 
+        email=agency.email,  
+        password=agency.name,  
+    )
+    await create_user(db, user_data)
     agency_exist=  db.query(Agencies).filter(Agencies.legal_registration_number==agency.legal_registration_number).first()
     if agency_exist:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Agency already exist with this legal registration number")

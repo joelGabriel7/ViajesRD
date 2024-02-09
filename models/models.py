@@ -34,7 +34,7 @@ class Clients(Base):
     address = Column(String(length=255))
     client_code = Column(String(length=150), unique=True, nullable=False)
     
-    user = relationship("Users", back_populates="client")
+ 
     reservations = relationship("Reservations", back_populates="client")  # Cambiado de 'reservation' a 'reservations'
 
     created = Column(Date(), default=func.current_date())
@@ -74,7 +74,7 @@ class Agencies(Base):
 
 
     excursions = relationship("Excursions", back_populates="agency")  # Cambiado de 'agencies' a 'agency'
-    users = relationship("Users", back_populates="agency")  # Cambiado de 'user' a 'users'
+    # Cambiado de 'user' a 'users'
 
     
     created_at = Column(Date(), default=func.current_date())
@@ -142,17 +142,14 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(length=150), unique=True, nullable=False)
+    username = Column(String(length=150), unique=False, nullable=False)
     hashed_password = Column(String(), nullable=False)
     email = Column(String(length=255), unique=True, nullable=False)
-    role = Column(Enum('agency', 'client', name='role'), default='agency')
     status = Column(Enum('active', 'inactive', name='status'), default='active')
-
-    agency_id = Column(Integer, ForeignKey('agencies.id'))
-    client_id = Column(Integer, ForeignKey('clients.id'))
-
-    agency = relationship("Agencies", back_populates="users")
-    client = relationship("Clients", back_populates="user")
-
+    role = Column(Enum('agency', 'client', name='role'), default='user')
+    
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
+
+
+
