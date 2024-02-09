@@ -3,9 +3,20 @@ from schemas.clients import *
 from models.models import Clients
 from sqlalchemy.orm import Session
 
+from schemas.users import UserCreate
+from .users import create_user
+
 
 async def create_client(db:Session, client:ClientCreate):
     try:
+        user_data = UserCreate(
+            username=client.first_name.replace(" ", "").capitalize(), 
+            email=client.email,  
+            password=client.client_code,
+            role="client"  
+        )
+        await create_user(db, user_data)
+
         client_exists = db.query(Clients).filter(Clients.email == client.email).first()
         if client_exists:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
