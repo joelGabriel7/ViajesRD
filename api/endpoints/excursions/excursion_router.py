@@ -15,7 +15,7 @@ async def create_excursion_endpoint(excursion:ExcursionsCreate, db:Session = Dep
 async def get_all_excursions_endpoint(db:Session = Depends(get_db)):
     return await get_all_excursions(db)
 
-@excursion_router.get("/list/{excursion_id}", response_model=ExcursionsWithTouristPlaceAndAgency, status_code=status.HTTP_200_OK)
+@excursion_router.get("/list/{excursion_id}", response_model=ExcursionWithGanancias, status_code=status.HTTP_200_OK)
 async def get_excursion_by_id_endpoint(excursion_id:int, db:Session = Depends(get_db)):
     return await get_excursion_by_id(db,excursion_id)
 

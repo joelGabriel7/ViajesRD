@@ -1,11 +1,16 @@
+from pydantic import ValidationError
+from sqlalchemy import func
+import sqlalchemy
 from schemas.excursions import *
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
-from models.models import Excursions as excursions_model
+from models.models import Excursions as excursions_model, Payments, Reservations
 from api.deps.helpers.filter_agency_and_tourist_place import validate_agency_exites, validate_tourist_place_exites
 
 
-
+def calculate_total_ganancias_for_excursion(db: Session, excursion_id: int) -> float:
+    total_ganancias = db.query(func.sum(Payments.amount)).join(Reservations, Payments.reservation_id == Reservations.id).filter(Reservations.excursion_id == excursion_id).scalar() or 0.0
+    return total_ganancias
 
 async def create_excursion(db:Session, excursion:ExcursionsCreate):
 
@@ -27,23 +32,59 @@ async def get_all_excursions(db:Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No excursions found")
     return excursions
 
-async def get_excursion_by_id(db:Session, excursion_id:int):
-    excursion =  db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
-    if excursion is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No excursions found")
+async def get_excursion(db:Session,excursion_id:int):
+    excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
+    if not excursion:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
     return excursion
 
-async def update_excursion(db:Session, excursion_id:int, new_excursion:ExcursionsUpdate):
-    try:
-        excursion_update = await get_excursion_by_id(db,excursion_id) 
-        for var, value in vars(new_excursion).items():
-                setattr(excursion_update, var, value) if value else None
 
-        db.commit()
-        db.refresh(excursion_update)
-    except Exception as e:
+async def get_excursion_by_id(db: Session, excursion_id: int):
+
+    excursion = await get_excursion(db,excursion_id)
+    agency = excursion.agency
+
+
+    # Calcula el total de ganancias para esta excursión
+    total_ganancias = calculate_total_ganancias_for_excursion(db, excursion_id)
+    agency_dict = {c.key: getattr(agency, c.key) for c in sqlalchemy.inspect(agency).mapper.column_attrs}
+
+    # Crea una instancia de AgencyName con los datos de la agencia
+    agency_name = AgencyName(**agency_dict)
+
+    excursion_data = create_excursion_data(excursion, total_ganancias, agency=agency_name)
+
+    return excursion_data
+
+def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName) -> ExcursionWithGanancias:
+    try:
+        # Asegúrate de incluir manualmente total_ganancias en el dictado para la creación del modelo Pydantic
+        excursion_dict = excursion.__dict__
+        excursion_dict.update({"total_ganancias": total_ganancias, "agency": agency})
+        excursion_data = ExcursionWithGanancias(**excursion_dict)
+    except ValidationError as e:
+        # Manejar posibles errores de validación
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    return excursion_update
+    return excursion_data
+
+
+async def update_excursion(db: Session, excursion_id: int, excursion_data: ExcursionsUpdate):
+    # Obtener el objeto de excursión directamente como un objeto ORM
+    excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).first()
+    if not excursion:
+        raise HTTPException(status_code=404, detail="Excursion not found")
+
+    # Actualizar los campos con los datos proporcionados
+    update_data = excursion_data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(excursion, key, value)
+
+    db.commit()
+    db.refresh(excursion)
+
+    # Si necesitas devolver un modelo Pydantic actualizado aquí, debes hacerlo después de actualizar el ORM
+    return ExcursionsUpdate.from_orm(excursion)
+
 
 async def delete_excursion(db:Session, excursion_id:int):
     try:

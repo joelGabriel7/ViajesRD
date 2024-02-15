@@ -1,8 +1,10 @@
-
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Date,Enum
+import sqlalchemy
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Date,Enum, insert, select
 from sqlalchemy.orm import relationship
 from data.db import Base
 from sqlalchemy import func
+from sqlalchemy import event
+from sqlalchemy.exc import SQLAlchemyError
 
 class TouristPlace(Base):
 
@@ -92,12 +94,12 @@ class Reservations(Base):
     client_id = Column(Integer, ForeignKey('clients.id'))
     excursion_id = Column(Integer, ForeignKey('excursions.id'))
 
-    client = relationship("Clients", back_populates="reservations")  # Cambiado de 'reservation' a 'reservations'
-    excursion = relationship("Excursions", back_populates="reservations")  # Cambiado de 'reservation' a 'reservations'
+    client = relationship("Clients", back_populates="reservations")  
+    excursion = relationship("Excursions", back_populates="reservations")  
     payment = relationship("Payments", back_populates="reservation")
 
-    created = Column(Date(), default=func.current_date())
-    updated = Column(Date(), default=func.current_date())
+    created = Column(DateTime(), default=func.current_timestamp(), onupdate=func.current_timestamp())
+    updated = Column(DateTime(), default=func.current_timestamp(), onupdate=func.current_timestamp())
 
 class Excursions(Base):
 
@@ -109,7 +111,6 @@ class Excursions(Base):
     duration_excursion = Column(Integer, default=0)
     price = Column(Float, default=0.0)
     available_places = Column(Integer, default=0)
-    
     description = Column(String(length=255))
     agency_id = Column(Integer, ForeignKey('agencies.id'))
     tourist_place_id = Column(Integer, ForeignKey('tourist_places.id'))
@@ -117,7 +118,7 @@ class Excursions(Base):
     agency = relationship("Agencies", back_populates="excursions")  # Cambiado de 'agencies' a 'agency'
     tourist_place = relationship("TouristPlace", back_populates="excursions")
     reservations = relationship("Reservations", back_populates="excursion")  # Cambiado de 'reservation' a 'reservations'
-    
+    payments = relationship("Payments", backref="excursion")
 
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
@@ -130,8 +131,8 @@ class Payments(Base):
     status = Column(String(length=150), default='pending')
     payment_method = Column(String(length=150), default='cash')
     date_payment = Column(Date(), default=func.current_date())
-
     reservation_id = Column(Integer, ForeignKey('reservations.id'))
+    excursion_id = Column(Integer, ForeignKey('excursions.id'))
 
     reservation = relationship("Reservations", back_populates="payment")
 
@@ -150,6 +151,33 @@ class Users(Base):
     
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
+
+
+def create_payment_after_reservation(mapper, connection, target):
+    # No necesitas crear una nueva sesión, puedes usar la conexión existente
+
+    try:
+        # Encuentra la excursión asociada
+        excursion = connection.execute(select(Excursions).where(Excursions.id == target.excursion_id)).first()
+        # Calcula el monto y crea el pago
+        calculated_amount = excursion.price * target.number_of_places
+        payment = Payments(
+            reservation_id=target.id,
+            amount=calculated_amount,
+            status='pending',
+            payment_method='credit', 
+            date_payment=func.current_date(),
+            excursion_id=target.excursion_id,
+            created = func.current_timestamp(),
+            updated = func.current_timestamp(),
+              
+        )
+        payment_dict = {c.key: getattr(payment, c.key) for c in sqlalchemy.inspect(payment).mapper.column_attrs}
+        connection.execute(insert(Payments).values(payment_dict))
+    except SQLAlchemyError as e:
+        print(f"Error al procesar el pago o actualizar la reserva: {e}")
+event.listen(Reservations, 'after_insert', create_payment_after_reservation)        
+
 
 
 

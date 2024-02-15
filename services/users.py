@@ -23,19 +23,14 @@ def get_users_by_email(db:Session, email:str):
 def get_user_by_username(db:Session, username:str):
     return db.query(users_model).filter(users_model.username == username).first()
 
-
-
-
 async def create_user(db: Session, user: UserCreate):
     try:
-
         password = hash_password(user.password)
         user_exist = get_users_by_email(db, user.email)
         if user_exist:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
         user_dict = user.model_dump(exclude={'password'})
         user_dict['hashed_password'] = password 
-        print('user_dict', user_dict) 
         db_user = users_model(**user_dict)
         db.add(db_user)
         db.commit()

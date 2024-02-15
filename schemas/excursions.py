@@ -1,9 +1,8 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import date, datetime
-from schemas.agency import AgencyBase, AgencyCreate
 
-from schemas.tourist_place import CategoryName, TouristPlaceBase, TouristPlaceCreate
+from schemas.tourist_place import CategoryName
 
 
 class ExcusionsBase(BaseModel):
@@ -21,16 +20,19 @@ class ExcursionsCreate(ExcusionsBase):
 class AgencyName(BaseModel):
     name: str
     email: EmailStr
-    legal_registration_number:str= Field( min_length=0, max_length=255)
-    license_number: str = Field(min_length=0, max_length=255)
-
-
-
+ 
 class TouristPlaceForExcursion(BaseModel):
     name: str
     location: str
     category: CategoryName
 
+class ExcursionWithGanancias(ExcusionsBase):
+    total_ganancias: float
+    agency: AgencyName
+
+    class Config:
+        # orm_mode = True
+        from_attributes = True
 
 class ExcursionsWithTouristPlaceAndAgency(ExcusionsBase):
     id: int
@@ -45,6 +47,7 @@ class Excursions(ExcusionsBase):
     class Config:
         from_attributes = True
 
-
 class ExcursionsUpdate(ExcusionsBase):
-    pass
+     class Config:
+        # orm_mode = True
+        from_attributes = True

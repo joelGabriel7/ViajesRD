@@ -7,7 +7,9 @@ from schemas.users import *
 
 
 
+
 router = APIRouter(prefix='/users', tags=['Users'])
+
 @router.post("/create", response_model=UserCreate, status_code=status.HTTP_201_CREATED)
 async def create_agency_user_endpoint(user: UserCreate, db: Session = Depends(get_db)):
     return await create_user(db, user) 
@@ -31,3 +33,5 @@ async def deactive_user_endpoint(user_id:int, db:Session = Depends(get_db)):
         return {'message': 'User deactivated', 'user': user}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    
+
