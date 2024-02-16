@@ -118,10 +118,10 @@ class Excursions(Base):
     agency = relationship("Agencies", back_populates="excursions")  # Cambiado de 'agencies' a 'agency'
     tourist_place = relationship("TouristPlace", back_populates="excursions")
     reservations = relationship("Reservations", back_populates="excursion")  # Cambiado de 'reservation' a 'reservations'
-    payments = relationship("Payments", backref="excursion")
+    # payments = relationship("Payments", backref="excursion")
 
-    created = Column(Date(), default=func.current_date())
-    updated = Column(Date(), default=func.current_date())
+    created = Column(DateTime(), default=func.current_date())
+    updated = Column(DateTime(), default=func.current_date())
     
 class Payments(Base):
     __tablename__ = "payments"
@@ -130,14 +130,14 @@ class Payments(Base):
     amount = Column(Integer, default=0)
     status = Column(String(length=150), default='pending')
     payment_method = Column(String(length=150), default='cash')
-    date_payment = Column(Date(), default=func.current_date())
+    date_payment = Column(DateTime(), default=func.current_date())
     reservation_id = Column(Integer, ForeignKey('reservations.id'))
-    excursion_id = Column(Integer, ForeignKey('excursions.id'))
+    # excursion_id = Column(Integer, ForeignKey('excursions.id'))
 
     reservation = relationship("Reservations", back_populates="payment")
 
-    created = Column(Date(), default=func.current_date())
-    updated = Column(Date(), default=func.current_date())
+    created = Column(DateTime(), default=func.current_date())
+    updated = Column(DateTime(), default=func.current_date())
 
 class Users(Base):
     __tablename__ = "users"
@@ -152,31 +152,6 @@ class Users(Base):
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
 
-
-def create_payment_after_reservation(mapper, connection, target):
-    # No necesitas crear una nueva sesión, puedes usar la conexión existente
-
-    try:
-        # Encuentra la excursión asociada
-        excursion = connection.execute(select(Excursions).where(Excursions.id == target.excursion_id)).first()
-        # Calcula el monto y crea el pago
-        calculated_amount = excursion.price * target.number_of_places
-        payment = Payments(
-            reservation_id=target.id,
-            amount=calculated_amount,
-            status='pending',
-            payment_method='credit', 
-            date_payment=func.current_date(),
-            excursion_id=target.excursion_id,
-            created = func.current_timestamp(),
-            updated = func.current_timestamp(),
-              
-        )
-        payment_dict = {c.key: getattr(payment, c.key) for c in sqlalchemy.inspect(payment).mapper.column_attrs}
-        connection.execute(insert(Payments).values(payment_dict))
-    except SQLAlchemyError as e:
-        print(f"Error al procesar el pago o actualizar la reserva: {e}")
-event.listen(Reservations, 'after_insert', create_payment_after_reservation)        
 
 
 

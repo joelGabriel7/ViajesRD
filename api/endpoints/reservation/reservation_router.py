@@ -22,6 +22,19 @@ async def get_reservation_by_id_endpoint(reservation_id:int, db:Session = Depend
 async def get_reservations_by_client_id_endpoint(client_id:int, db:Session = Depends(get_db)):
     return await get_reservations_by_client_id(db,client_id)
 
-@router.get('/', response_model=list[ReservationBase], status_code = status.HTTP_200_OK)
+@router.get('/', response_model=list[Reservation], status_code = status.HTTP_200_OK)
 async def get_reservations_by_limit_endpoint(skip:int = 0, limit: int=10, db:Session = Depends(get_db)):
     return await get_reservations_by_limit(db,skip,limit)
+
+@router.put('/{reservation_id}', response_model=ReservationUpdate, status_code = status.HTTP_200_OK)
+async def update_reservation_endpoint(reservation_id:int, reservationUpdate:ReservationUpdate, db:Session = Depends(get_db)):
+    return await update_reservations(db,reservation_id, reservationUpdate)
+
+@router.delete('/{reservation_id}', status_code = status.HTTP_200_OK)
+async def delete_reservation_endpoint(reservation_id:int,db:Session = Depends(get_db)):
+    return await delete_reservation(db,reservation_id)
+
+
+@router.post("/{reservation_id}/confirm", status_code = status.HTTP_200_OK)
+async def confirm_reservation_endpoint(reservation_id:int, db:Session = Depends(get_db)):
+    return await confirm_reservation_and_initiate_payment(reservation_id,db)

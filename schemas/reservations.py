@@ -17,6 +17,7 @@ class ClientName(BaseModel):
     email:EmailStr   
 
 class ReservationBase(BaseModel):
+    id: int
     date_reservation: Optional[date] = date(2000,1,1)
     number_of_places: int
     status: ReservationsEnum =  ReservationsEnum.pending
@@ -30,9 +31,6 @@ class ReservationWithClient(ReservationBase):
 class ReservationCreate(ReservationBase):
     pass
 
-class ReservationUpdate(ReservationBase):
-    pass
-
 class Reservation(ReservationBase):
     id: int
     created: datetime
@@ -40,3 +38,7 @@ class Reservation(ReservationBase):
 
     class Config:
         from_atributtes = True
+
+class ReservationUpdate(ReservationBase):
+    pass
+
