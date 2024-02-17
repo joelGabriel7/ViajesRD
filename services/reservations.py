@@ -37,8 +37,8 @@ async def get_reservation_by_id(db: Session, reservation_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservation not found")
     return reservation 
 
-async def get_reservations_by_client_id(db: Session, client_id: int):
-    reservations = db.query(Reservations).filter(Reservations.client_id == client_id).all()
+async def get_reservations_by_excursion_id(db: Session, excursion_id: int):
+    reservations = db.query(Reservations).filter(Reservations.excursion_id == excursion_id).all()
     if not reservations:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservations not found")
     return reservations
