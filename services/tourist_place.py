@@ -23,7 +23,6 @@ async def create_tourist_place(db:Session, tourist_place:TouristPlaceCreate):
         db.commit()
         db.refresh(new_tourist_place)
         db.commit()
-        # new_tourist_place = db.query(TouristPlace).options(joinedload(TouristPlace.category)).filter(TouristPlace.id == new_tourist_place.id).first()
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     return new_tourist_place

@@ -1,10 +1,7 @@
-import sqlalchemy
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Date,Enum, insert, select
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Date,Enum
 from sqlalchemy.orm import relationship
 from data.db import Base
 from sqlalchemy import func
-from sqlalchemy import event
-from sqlalchemy.exc import SQLAlchemyError
 
 class TouristPlace(Base):
 
@@ -19,9 +16,21 @@ class TouristPlace(Base):
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
     category = relationship("Categories", back_populates="tourist_places")
     excursions = relationship("Excursions", back_populates="tourist_place")
+    images = relationship("TouristPlaceImage", back_populates="tourist_place")
     
     created = Column(Date, default=func.current_date())
     updated = Column(Date, default=func.current_date())
+
+
+class TouristPlaceImage(Base):
+    __tablename__ = 'tourist_places_images'
+
+
+    id = Column(Integer, primary_key = True, index=True)
+    image_url = Column(String,  nullable=True)
+    tourist_place_id = Column(Integer, ForeignKey("tourist_places.id"), nullable=False)
+    tourist_place = relationship("TouristPlace", back_populates="images")
+
       
 class Clients(Base):
     __tablename__ = "clients"
@@ -135,9 +144,6 @@ class Payments(Base):
     # excursion_id = Column(Integer, ForeignKey('excursions.id'))
 
     reservation = relationship("Reservations", back_populates="payment")
-
-    created = Column(DateTime(), default=func.current_date())
-    updated = Column(DateTime(), default=func.current_date())
 
 class Users(Base):
     __tablename__ = "users"
