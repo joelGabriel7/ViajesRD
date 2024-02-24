@@ -27,8 +27,13 @@ async def create_tourist_place(db:Session, tourist_place:TouristPlaceCreate):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     return new_tourist_place
 
-async def get_all_toruist_place(db:Session):
-    return db.query(TouristPlace).options(joinedload(TouristPlace.category)).all()
+async def get_all_tourist_place(db:Session):
+    tourist_place = db.query(TouristPlace).options(
+        joinedload(TouristPlace.category),
+        joinedload(TouristPlace.images),
+    
+    ).all()
+    return  tourist_place
 
 async def get_tourist_place_by_id(db:Session, tourist_place_id:int):
     place_id = db.query(TouristPlace).options(joinedload(TouristPlace.category)).filter(TouristPlace.id == tourist_place_id).first()

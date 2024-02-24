@@ -10,7 +10,6 @@ class TouristPlace(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String(length=255))
-    image = Column(String)
     location = Column(String)
 
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)

@@ -3,11 +3,17 @@ from datetime import datetime
 from typing import Optional
 
 
+class TouristPlaceImage(BaseModel):
+    id: int
+    image_url: str
+
+    class Config:
+        from_attributes = True
+
 
 class TouristPlaceBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: Optional[str] = None
-    image: Optional[str] = None
     location: str= Field(min_length=1)
     category_id: int
 
@@ -22,6 +28,7 @@ class CategoryName(BaseModel):
 class TouristPlaceWithCategory(TouristPlaceBase):
     id:int
     category: CategoryName
+    images: Optional[list[TouristPlaceImage]] = []
 
 class TouristPlace(TouristPlaceBase):   
     id: int
