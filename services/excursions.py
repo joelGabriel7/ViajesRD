@@ -32,7 +32,7 @@ async def get_all_excursions(db:Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No excursions found")
     return excursions
 
-async def get_excursion(db:Session,excursion_id:int):
+async def get_excursion_to_delete(db:Session,excursion_id:int):
     excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
     if not excursion:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
@@ -41,24 +41,23 @@ async def get_excursion(db:Session,excursion_id:int):
 
 async def get_excursion_by_id(db: Session, excursion_id: int):
 
-    excursion = await get_excursion(db,excursion_id)
+    excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
+    if not excursion:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
     agency = excursion.agency
 
 
-    # Calcula el total de ganancias para esta excursión
+    
     total_ganancias = calculate_total_ganancias_for_excursion(db, excursion_id)
     agency_dict = {c.key: getattr(agency, c.key) for c in sqlalchemy.inspect(agency).mapper.column_attrs}
 
-    # Crea una instancia de AgencyName con los datos de la agencia
+  
     agency_name = AgencyName(**agency_dict)
-
     excursion_data = create_excursion_data(excursion, total_ganancias, agency=agency_name)
-
     return excursion_data
 
-def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName) -> ExcursionWithGanancias:
+def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName):
     try:
-        # Asegúrate de incluir manualmente total_ganancias en el dictado para la creación del modelo Pydantic
         excursion_dict = excursion.__dict__
         excursion_dict.update({"total_ganancias": total_ganancias, "agency": agency})
         excursion_data = ExcursionWithGanancias(**excursion_dict)
@@ -69,12 +68,11 @@ def create_excursion_data(excursion: excursions_model, total_ganancias: float, a
 
 
 async def update_excursion(db: Session, excursion_id: int, excursion_data: ExcursionsUpdate):
-    # Obtener el objeto de excursión directamente como un objeto ORM
-    excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).first()
-    if not excursion:
-        raise HTTPException(status_code=404, detail="Excursion not found")
+    
+    excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).first() 
+    if not excursion or validate_tourist_place_exites(db,excursion_data):
+        raise HTTPException(status_code=404, detail="Excursion not found or Tourist place not found")
 
-    # Actualizar los campos con los datos proporcionados
     update_data = excursion_data.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(excursion, key, value)
@@ -88,12 +86,9 @@ async def update_excursion(db: Session, excursion_id: int, excursion_data: Excur
 
 async def delete_excursion(db:Session, excursion_id:int):
     try:
-        excursion_delete = await get_excursion_by_id(db,excursion_id)
+        excursion_delete = await get_excursion_to_delete(db,excursion_id)
         db.delete(excursion_delete)
         db.commit()
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return {"detail": "Excursion deleted successfully"}
-
-async def get_excursion_by_id_with_agency_and_tourist_place(db:Session, excursion_id:int):
-    return await get_excursion_by_id_with_agency_and_tourist_place(db,excursion_id)
