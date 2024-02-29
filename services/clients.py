@@ -28,8 +28,8 @@ async def create_client(db:Session, client:ClientCreate):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))    
     return new_client
 
-async def get_clients(db:Session, skip:int, limit:int):
-    clients = db.query(Clients).offset(skip).limit(limit).all()
+async def get_clients(db:Session):
+    clients = db.query(Clients).all()
     if clients is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No clients found")
     return clients

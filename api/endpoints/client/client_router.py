@@ -10,8 +10,8 @@ async def create_client_endpoint(client:ClientCreate, db:Session=Depends(get_db)
     return await create_client(db, client)
 
 @router.get('/list', response_model=list[Client],status_code=status.HTTP_200_OK)
-async def get_all_client(skip:int=0, limit:int=10, db:Session=Depends(get_db)):
-    return await get_clients(db, skip, limit)
+async def get_all_client(db:Session=Depends(get_db)):
+    return await get_clients(db)
 
 @router.get('/list/{client_id}', response_model=Client, status_code=status.HTTP_200_OK)
 async def get_client_by_id_endpoint(client_id:int, db:Session=Depends(get_db)):
