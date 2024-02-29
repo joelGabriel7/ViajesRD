@@ -9,6 +9,7 @@ router = APIRouter(prefix="/category", tags=["Category"])
 @router.post("/create", response_model=CategoryCreate, status_code=status.HTTP_201_CREATED)
 async def create_category_endpoint(cateogry:CategoryCreate, db:Session=Depends(get_db)):
     return await create_category(db, cateogry)
+    
 
 @router.get("/list", response_model=list[Category], status_code=status.HTTP_200_OK)
 async def get_all_categories_endpoint(db:Session = Depends(get_db)):
