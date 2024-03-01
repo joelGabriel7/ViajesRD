@@ -41,6 +41,14 @@ async def get_tourist_place_by_id(db:Session, tourist_place_id:int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tourist place not found")
     return place_id
 
+async def get_tourist_place_by_categories(db:Session, categories:int):
+    category= db.query(TouristPlace).filter(TouristPlace.category_id == categories).all()
+    if category is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tourist place not found with category")
+    return category
+
+
+
 async def update_tourist_place(db:Session,  tourist_place: TouristPlaceUpdate, tourist_place_id:int):
     tourist_place_to_update = await get_tourist_place_by_id(db, tourist_place_id)
     if tourist_place_to_update is None:
