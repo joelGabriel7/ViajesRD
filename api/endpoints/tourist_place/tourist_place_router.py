@@ -25,7 +25,7 @@ async def tourist_place_list_endpoint(db:Session = Depends(get_db)):
 async def get_tourist_place_by_id_endpoint(tourist_place_id:int, db:Session = Depends(get_db)):
     return await get_tourist_place_by_id(db,tourist_place_id)
 
-@router.get('/{categories}/tourist_places', response_model=[TouristPlaceWithCategory],status_code=status.HTTP_200_OK)
+@router.get('/{categories}/tourist_places', response_model=list[TouristPlaceWithCategory],status_code=status.HTTP_200_OK)
 async def get_tourist_place_by_category_endpoint(categories:int, db:Session = Depends(get_db)):
     return await get_tourist_place_by_categories(db,categories)
 
