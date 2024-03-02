@@ -32,7 +32,7 @@ async def get_all_tourist_place(db:Session):
         joinedload(TouristPlace.category),
         joinedload(TouristPlace.images),
     
-    ).all()
+    ).order_by(TouristPlace.id).all()  
     return  tourist_place
 
 async def get_tourist_place_by_id(db:Session, tourist_place_id:int):

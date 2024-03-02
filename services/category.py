@@ -15,7 +15,7 @@ async def create_category(db: Session, category: CategoryCreate):
     return new_category
 
 async def get_all_categories(db:Session):
-    categories = db.query(Categories).all()
+    categories = db.query(Categories).order_by(Categories.id).all()
     if categories is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Do not have any category")
     return  categories
