@@ -5,7 +5,7 @@ import os
 
 # DATABASE_URL = os.getenv("DATABASE_URL")
 # SQLALCHEMY_DATABASE_URL = "postgresql://postgres:german2323@localhost/ViajeRD"
-SQLALCHEMY_DATABASE_URL = "postgresql://user:myXgLDW3F2ppSKlhzS8nHeQ25LaUFN9S@dpg-cnguatla73kc73caufhg-a.oregon-postgres.render.com/viajes_lfs8"
+SQLALCHEMY_DATABASE_URL = "postgresql://viajesuser:9r6eTzoadNBtICB05iecXq0jjGv8FK6L@dpg-cnhk6ifsc6pc73dvpmmg-a.oregon-postgres.render.com/viajes_wyl5"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
