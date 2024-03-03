@@ -45,11 +45,11 @@ async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(..
     files_urls = []
     for file in files:
         try:
-            os.makedirs('static/images', exist_ok=True)
+            os.makedirs('static', exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             filename = f"{timestamp}_{file.filename}"
 
-            file_path = f'static/images/{filename}'
+            file_path = f'static/{filename}'
 
 
             with open(file_path, "wb") as file_object:
