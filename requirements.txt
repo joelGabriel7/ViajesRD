@@ -28,7 +28,6 @@ packaging==23.2
 passlib==1.7.4
 paypalrestsdk==1.13.3
 pluggy==1.4.0
-psycopg2==2.9.9
 pyasn1==0.5.1
 pycparser==2.21
 pydantic==2.6.0
