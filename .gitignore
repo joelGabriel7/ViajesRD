@@ -1,6 +1,6 @@
 # Ignore node_modules directory
 node_modules/
-
+logs/
 
 
 # Ignore build output
@@ -15,7 +15,7 @@ migrations/
 .idea/
 
 # Ignore logs and temporary files
-*.log
+*.logs
 *.tmp
 
 # Ignore environment-specific files
