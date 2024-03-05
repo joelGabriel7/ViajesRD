@@ -8,6 +8,7 @@ build/
 test/
 # Ignore databases file
 databases.db
+sql_app.db
 migrations/
 # Ignore IDE and editor files
 .vscode/
