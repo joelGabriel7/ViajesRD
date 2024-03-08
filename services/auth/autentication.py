@@ -12,7 +12,7 @@ from typing import Annotated, Union
 
 SECRET_KEY = "1ffd17bc3bd1b6a1f08cefe1300fa6de273124cb0fe7bf22f1c8e8228160fcba"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRATION = timedelta(minutes=30)
+ACCESS_TOKEN_EXPIRATION = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -23,7 +23,6 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
 
 def get_user(db: Session, username: str):
     return db.query(Users).filter(Users.username == username).first()
