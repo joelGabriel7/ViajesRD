@@ -70,23 +70,22 @@ async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(..
     return {"images": images_data}
 
 
-from sqlalchemy import  text
-from data.db import engine
+# from sqlalchemy import  text
 
-@router.post("/truncate-images")
-async def truncate_images(db: Session = Depends(get_db)):
-    try:
-        # Utiliza la función `text()` para indicar que es una expresión SQL segura
-        db.execute(text('TRUNCATE TABLE tourist_places_images RESTART IDENTITY CASCADE'))
-        db.commit()
-        return {'Galeria eliminada': 'success'}
-    except Exception as e:
-        # Asegúrate de manejar excepciones y posiblemente revertir si hay un error
-        db.rollback()
-        raise e
-    finally:
-        # Cerrar la sesión de la base de datos
-        db.close()
+# @router.post("/truncate-images")
+# async def truncate_images(db: Session = Depends(get_db)):
+#     try:
+#         # Utiliza la función `text()` para indicar que es una expresión SQL segura
+#         db.execute(text('TRUNCATE TABLE tourist_places_images RESTART IDENTITY CASCADE'))
+#         db.commit()
+#         return {'Galeria eliminada': 'success'}
+#     except Exception as e:
+#         # Asegúrate de manejar excepciones y posiblemente revertir si hay un error
+#         db.rollback()
+#         raise e
+#     finally:
+#         # Cerrar la sesión de la base de datos
+#         db.close()
     
     
     
