@@ -40,7 +40,7 @@ async def delete_tourist_place_endpoint(tourist_place_id:int, db:Session=Depends
 
 # Upload Images
 
-@router.post("/tourist-places/{tourist_place_id}/images/")
+@router.post("/{tourist_place_id}/images/")
 async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(...), db: Session = Depends(get_db)):
     files_urls = []
     for file in files:
