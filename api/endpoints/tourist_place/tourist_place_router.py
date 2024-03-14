@@ -69,6 +69,22 @@ async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(..
     images_data = [image_schema.from_orm(image).model_dump() for image in new_images]
     return {"images": images_data}
 
+@router.delete("/images/{image_id}/")
+async def delete_image(image_id: int, db: Session = Depends(get_db)):
+    image_to_delete = db.query(TouristPlaceImage).filter(TouristPlaceImage.id == image_id).first()
+    if not image_to_delete:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    try:
+        if os.path.exists(image_to_delete.image_url):
+            os.remove(image_to_delete.image_url)
+
+        db.delete(image_to_delete)
+        db.commit()
+        return {"message": "Image deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # from sqlalchemy import  text
 

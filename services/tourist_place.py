@@ -1,5 +1,5 @@
 from schemas.tourist_place import TouristPlaceCreate, TouristPlaceUpdate,TouristPlace
-from models.models import TouristPlace
+from models.models import TouristPlace, TouristPlaceImage
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload
@@ -64,6 +64,12 @@ async def delete_tourist_place(db:Session, tourist_place:int):
     tourist_place_to_delete = await get_tourist_place_by_id(db, tourist_place)
     if tourist_place_to_delete is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tourist place not found')
+    
+
+    images_to_delete = db.query(TouristPlaceImage).filter(TouristPlaceImage.tourist_place_id == tourist_place).all()
+    for image in images_to_delete:
+        db.delete(image)
+        
     db.delete(tourist_place_to_delete)
     db.commit()
     return {"message":"Tourist place deleted successfully"}
