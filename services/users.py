@@ -27,8 +27,9 @@ async def create_user(db: Session, user: UserCreate):
     try:
         password = hash_password(user.password)
         user_exist = get_users_by_email(db, user.email)
-        if user_exist:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+        username_exits = get_user_by_username(db, user.username)
+        if username_exits:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" username already registered")
         user_dict = user.model_dump(exclude={'password'})
         user_dict['hashed_password'] = password 
         db_user = users_model(**user_dict)

@@ -148,7 +148,7 @@ class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(length=150), unique=False, nullable=False)
+    username = Column(String(length=150), unique=True, nullable=False)
     hashed_password = Column(String(), nullable=False)
     email = Column(String(length=255), unique=True, nullable=False)
     status = Column(Enum('active', 'inactive', name='status'), default='active')
