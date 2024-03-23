@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException,status
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
@@ -30,9 +30,9 @@ def get_user(db: Session, username: str):
 def authenticate_user( username: str,password:str, db: Session = Depends(get_db)):
     user = get_user(db, username)
     if not user:
-        return False
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Usuario no encontrado')
     if not verify_password(password, user.hashed_password):
-        return False
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='contraseña incorrecta')
     return user
 
 def create_access_token(data:dict, expires_delta: Union[timedelta,None] = None):
