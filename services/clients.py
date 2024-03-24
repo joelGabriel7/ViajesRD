@@ -8,24 +8,14 @@ from .users import create_user
 
 
 async def create_client(db:Session, client:ClientCreate):
-    try:
-        user_data = UserCreate(
-            username=client.first_name.replace(" ", "").capitalize(), 
-            email=client.email,  
-            password=client.client_code,
-            role="client"  
-        )
-        await create_user(db, user_data)
+    client_exists = db.query(Clients).filter(Clients.email == client.email).first()
+    if client_exists is  None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+    new_client= Clients(**client.model_dump())
+    db.add(new_client)
+    db.commit()
+    db.refresh(new_client)
 
-        client_exists = db.query(Clients).filter(Clients.email == client.email).first()
-        if client_exists:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
-        new_client= Clients(**client.model_dump())
-        db.add(new_client)
-        db.commit()
-        db.refresh(new_client)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))    
     return new_client
 
 async def get_clients(db:Session):

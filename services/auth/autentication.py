@@ -24,7 +24,7 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def get_user(db: Session, username: str):
+def get_user( db: Session, username:str):
     return db.query(Users).filter(Users.username == username).first()
 
 def authenticate_user( username: str,password:str, db: Session = Depends(get_db)):
@@ -47,7 +47,7 @@ def create_access_token(data:dict, expires_delta: Union[timedelta,None] = None):
 
 async def get_current_user(token:Annotated[str, Depends(oauth2_scheme)]):
     credential_exception = HTTPException(
-        status_code=401,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail= 'No se puedo validar las credenciales',
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -56,15 +56,15 @@ async def get_current_user(token:Annotated[str, Depends(oauth2_scheme)]):
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         username  = payload.get('username')
         user_role = payload.get('role')
-        if username or user_role is None:
-            raise  credential_exception
-        token_data = TokenData(username=username,role=user_role)
+        user_id = payload.get('id')
+        if username is None or user_role is None:
+         raise credential_exception
+
+        token_data = TokenData(username=username,role=user_role, id=user_id)
+        return token_data
     except JWTError:
         raise credential_exception  
-    user = get_user(Session=Depends(get_db), username=token_data.username)
-    if user is None:
-        raise credential_exception
-    return user 
+    
 
 
 

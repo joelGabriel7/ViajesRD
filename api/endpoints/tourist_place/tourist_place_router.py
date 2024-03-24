@@ -1,20 +1,24 @@
 from datetime import datetime
-from typing import List
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from api.deps.get_db import get_db
 from schemas.tourist_place import TouristPlaceCreate,TouristPlaceUpdate, TouristPlace, TouristPlaceWithCategory, TouristPlaceImage as image_schema
+from schemas.users import User
+from services.auth.autentication import get_current_user
 from services.tourist_place import create_tourist_place, get_all_tourist_place, get_tourist_place_by_categories, get_tourist_place_by_id,  update_tourist_place, delete_tourist_place
 import os
 
 from models.models import TouristPlaceImage
 
 router = APIRouter(prefix='/tourist_place', tags=['Tourist Place']) 
-
+user_dependecies = Annotated[User, Depends(get_current_user)]
 
 @router.post('/create', response_model=TouristPlace, status_code=status.HTTP_201_CREATED)
-async def create_tourist_place_endpoint(tourist_place:TouristPlaceCreate, db:Session = Depends(get_db)):
+async def create_tourist_place_endpoint(tourist_place:TouristPlaceCreate, user:user_dependecies,db:Session = Depends(get_db)):
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to create a tourist place')
     return await create_tourist_place(db, tourist_place)
 
 @router.get('/list', response_model=list[TouristPlaceWithCategory], status_code=status.HTTP_200_OK)
@@ -30,18 +34,24 @@ async def get_tourist_place_by_category_endpoint(categories:int, db:Session = De
     return await get_tourist_place_by_categories(db,categories)
 
 @router.put('/update/{tourist_place_id}', response_model=TouristPlaceUpdate,status_code=status.HTTP_202_ACCEPTED)
-async def update_tourist_place_endpoint(tourist_place_id:int, tourist_place_to_update:TouristPlaceUpdate, db:Session=Depends(get_db)):
+async def update_tourist_place_endpoint(tourist_place_id:int, tourist_place_to_update:TouristPlaceUpdate,user:user_dependecies, db:Session=Depends(get_db)):
+    if user.role != 'agency':   
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to update a tourist place')
     return await update_tourist_place(db,tourist_place_to_update, tourist_place_id)
 
 @router.delete('/delete/{tourist_place_id}',status_code=status.HTTP_200_OK)
-async def delete_tourist_place_endpoint(tourist_place_id:int, db:Session=Depends(get_db)):
+async def delete_tourist_place_endpoint(tourist_place_id:int, user:user_dependecies,db:Session=Depends(get_db)):
+    if user.role != 'agency':   
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to delete a tourist place')
     return await delete_tourist_place(db, tourist_place_id)
 
 
 # Upload Images
 
 @router.post("/{tourist_place_id}/images/")
-async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(...), db: Session = Depends(get_db)):
+async def upload_images(tourist_place_id: int,user:user_dependecies, files: List[UploadFile] = File(...), db: Session = Depends(get_db)):
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to upload a image')
     files_urls = []
     for file in files:
         try:
@@ -70,11 +80,12 @@ async def upload_images(tourist_place_id: int, files: List[UploadFile] = File(..
     return {"images": images_data}
 
 @router.delete("/images/{image_id}/")
-async def delete_image(image_id: int, db: Session = Depends(get_db)):
+async def delete_image(image_id: int, user:user_dependecies,db: Session = Depends(get_db)):
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to delete a image')
     image_to_delete = db.query(TouristPlaceImage).filter(TouristPlaceImage.id == image_id).first()
     if not image_to_delete:
         raise HTTPException(status_code=404, detail="Image not found")
-    
     try:
         if os.path.exists(image_to_delete.image_url):
             os.remove(image_to_delete.image_url)
@@ -86,22 +97,7 @@ async def delete_image(image_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# from sqlalchemy import  text
 
-# @router.post("/truncate-images")
-# async def truncate_images(db: Session = Depends(get_db)):
-#     try:
-#         # Utiliza la función `text()` para indicar que es una expresión SQL segura
-#         db.execute(text('TRUNCATE TABLE tourist_places_images RESTART IDENTITY CASCADE'))
-#         db.commit()
-#         return {'Galeria eliminada': 'success'}
-#     except Exception as e:
-#         # Asegúrate de manejar excepciones y posiblemente revertir si hay un error
-#         db.rollback()
-#         raise e
-#     finally:
-#         # Cerrar la sesión de la base de datos
-#         db.close()
     
     
     

@@ -1,3 +1,6 @@
+from typing import Annotated
+from schemas.users import User
+from services.auth.autentication import get_current_user
 from services.category import * 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -6,8 +9,11 @@ from schemas.category import CategoryCreate, CategoryUpdate, Category
 
 router = APIRouter(prefix="/category", tags=["Category"])
 
+user_dependecies = Annotated[User, Depends(get_current_user)]
 @router.post("/create", response_model=CategoryCreate, status_code=status.HTTP_201_CREATED)
-async def create_category_endpoint(cateogry:CategoryCreate, db:Session=Depends(get_db)):
+async def create_category_endpoint(cateogry:CategoryCreate, user:user_dependecies,db:Session=Depends(get_db)):
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to create a category')
     return await create_category(db, cateogry)
     
 
@@ -21,9 +27,13 @@ async def get_Category_by_id_endpoint(category_id: int, db:Session = Depends(get
     return await get_categories_by_id(db, category_id)
 
 @router.put("/{category_id}", response_model=CategoryUpdate, status_code=status.HTTP_200_OK)
-async def update_category_endpoint(category_id: int, category: CategoryUpdate, db:Session = Depends(get_db)):
+async def update_category_endpoint(category_id: int, category: CategoryUpdate, user:user_dependecies,db:Session = Depends(get_db)):
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to update a category')
     return await update_category(db, category_id, category)
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)       
-async def delete_category_endpoint(category_id: int, db:Session = Depends(get_db)): 
+async def delete_category_endpoint(category_id: int,  user:user_dependecies,db:Session = Depends(get_db)): 
+    if user.role != 'agency':
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to delete a category')
     return await delete_category(db, category_id)
