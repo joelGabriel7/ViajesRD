@@ -9,12 +9,7 @@ class AgencyBase(BaseModel):
     phone: str
     email: EmailStr
     logo: Optional[str] = None
-    certications: str
-    legal_registration_number:str= Field( min_length=0, max_length=255)
-    insurance_number: str = Field(min_length=0, max_length=255)
-    license_number: str = Field(min_length=0, max_length=255)
-    insurance_provider: str
-    legal_contact_name: str
+    rnc:str= Field( min_length=0, max_length=255)
 
     
 class AgencyCreate(AgencyBase):
@@ -22,7 +17,6 @@ class AgencyCreate(AgencyBase):
 
 class Agency(AgencyBase):
     id: int
-    license_expiration_date: datetime
     created_at: datetime
     updated_at: datetime
 

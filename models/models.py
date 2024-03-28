@@ -16,15 +16,25 @@ class TouristPlace(Base):
     category = relationship("Categories", back_populates="tourist_places")
     excursions = relationship("Excursions", back_populates="tourist_place")
     images = relationship("TouristPlaceImage", back_populates="tourist_place")
+    ratings = relationship("TouristPlaceRating", back_populates="tourist_place")
     
     created = Column(Date, default=func.current_date())
     updated = Column(Date, default=func.current_date())
 
 
+class TouristPlaceRating(Base):
+    __tablename__ = 'tourist_place_ratings'
+
+    id = Column(Integer, primary_key=True, index=True)
+    rating = Column(Float, nullable=False)
+    tourist_place_id = Column(Integer, ForeignKey('tourist_places.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+    tourist_place = relationship("TouristPlace", back_populates="ratings")
+    user = relationship("Users", back_populates="ratings")
+
 class TouristPlaceImage(Base):
     __tablename__ = 'tourist_places_images'
-
-
     id = Column(Integer, primary_key = True, index=True)
     image_url = Column(String,  nullable=True)
     tourist_place_id = Column(Integer, ForeignKey("tourist_places.id"), nullable=False)
@@ -72,14 +82,7 @@ class Agencies(Base):
     phone = Column(String(length=20))
     email = Column(String(length=255)) 
     logo = Column(String(length=255))
-    legal_registration_number = Column(String(length=255),unique=True, nullable=False)
-    license_number = Column(String(length=255), unique=True, nullable=False)
-    license_expiration_date = Column(Date(), default=func.current_date())
-    certications = Column(String(length=255))
-    insurance_number = Column(String(length=255))
-    insurance_provider = Column(String(length=255))
-    legal_contact_name = Column(String(length=255))
-
+    rnc = Column(String(length=255),unique=True, nullable=False)
     status = Column(Enum('active', 'inactive', name='status'), default='active')
 
 
@@ -154,8 +157,11 @@ class Users(Base):
     status = Column(Enum('active', 'inactive', name='status'), default='active')
     role = Column(Enum('agency', 'client', name='role'), default='user')
     
+    ratings = relationship("TouristPlaceRating", back_populates="user")
+
     created = Column(Date(), default=func.current_date())
     updated = Column(Date(), default=func.current_date())
+
 
 
 

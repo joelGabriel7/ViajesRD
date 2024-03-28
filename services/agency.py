@@ -6,7 +6,7 @@ from schemas.agency import AgencyCreate, AgencyUpdate
 
 
 async def create_agency(db:Session ,agency: AgencyCreate):
-    agency_exist=db.query(Agencies).filter(Agencies.legal_registration_number==agency.legal_registration_number).first()
+    agency_exist=db.query(Agencies).filter(Agencies.rnc==agency.rnc).first()
     if agency_exist:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Agency already exist with this legal registration number")
     new_agency= Agencies(**agency.model_dump())
