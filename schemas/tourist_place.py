@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
+
 
 
 class TouristPlaceImage(BaseModel):
@@ -25,10 +26,23 @@ class CategoryName(BaseModel):
     name: str
     code_category: str
 
+class TouristPlaceRating(BaseModel):
+    rating: float
+
+
+
 class TouristPlaceWithCategory(TouristPlaceBase):
     id:int
     category: CategoryName
     images: Optional[list[TouristPlaceImage]] = []
+    ratings: Optional[List[TouristPlaceRating]] = None
+
+    @property
+    def average_rating(self) -> float:
+        if self.ratings:
+            return sum(rating.rating for rating in self.ratings) / len(self.ratings)
+        else:
+            return 0.0
 
 class TouristPlace(TouristPlaceBase):   
     id: int

@@ -7,7 +7,7 @@ from api.deps.get_db import get_db
 from schemas.tourist_place import TouristPlaceCreate,TouristPlaceUpdate, TouristPlace, TouristPlaceWithCategory, TouristPlaceImage as image_schema
 from schemas.users import User
 from services.auth.autentication import get_current_user
-from services.tourist_place import create_tourist_place, get_all_tourist_place, get_tourist_place_by_categories, get_tourist_place_by_id,  update_tourist_place, delete_tourist_place
+from services.tourist_place import create_tourist_place, get_all_tourist_place, get_tourist_place_by_categories, get_tourist_place_by_id, rate_tourist_place,  update_tourist_place, delete_tourist_place
 import os
 
 from models.models import TouristPlaceImage
@@ -96,7 +96,9 @@ async def delete_image(image_id: int, user:user_dependecies,db: Session = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@router.post('/rate/{tourist_place_id}/{rating}', status_code=status.HTTP_201_CREATED)
+async def rate_tourist_place_endpoint(tourist_place_id:int, rating:int, user:user_dependecies, db:Session = Depends(get_db)):
+    return await rate_tourist_place(db, tourist_place_id, rating, user.id)
 
     
     

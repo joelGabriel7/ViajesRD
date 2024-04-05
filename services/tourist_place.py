@@ -1,5 +1,5 @@
 from schemas.tourist_place import TouristPlaceCreate, TouristPlaceUpdate,TouristPlace
-from models.models import TouristPlace, TouristPlaceImage
+from models.models import TouristPlace, TouristPlaceImage, TouristPlaceRating
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload
@@ -31,6 +31,7 @@ async def get_all_tourist_place(db:Session):
     tourist_place = db.query(TouristPlace).options(
         joinedload(TouristPlace.category),
         joinedload(TouristPlace.images),
+        joinedload(TouristPlace.ratings)
     
     ).order_by(TouristPlace.id).all()  
     return  tourist_place
@@ -76,3 +77,16 @@ async def delete_tourist_place(db:Session, tourist_place:int):
 
 
 
+async def rate_tourist_place(db:Session, tourist_place_id:int, rating:int, user_id:int):
+    tourist_place = await get_tourist_place_by_id(db, tourist_place_id)
+    if tourist_place is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tourist place not found")
+    try:
+        new_rating = TouristPlaceRating(rating=rating, tourist_place_id=tourist_place_id, user_id=user_id)
+        db.add(new_rating)
+        db.commit()
+        db.refresh(new_rating)
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    return new_rating.rating
