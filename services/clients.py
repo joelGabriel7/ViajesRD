@@ -48,3 +48,4 @@ async def delete_client(db:Session,  client_id):
     db.delete(client)
     db.commit()
     return {"message":"Client deleted successfully"}
+

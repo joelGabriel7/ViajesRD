@@ -6,9 +6,6 @@ from api.deps.get_db import get_db
 from sqlalchemy.orm import Session
 from schemas.users import *
 
-
-
-
 router = APIRouter(prefix='/users', tags=['Users'])
 user_dependecies = Annotated[User, Depends(get_current_user)]
 
@@ -49,5 +46,3 @@ async def deactive_user_endpoint(user_id:int, user_loggued:user_dependecies,db:S
         return {'message': 'User deactivated', 'user': user}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    
-

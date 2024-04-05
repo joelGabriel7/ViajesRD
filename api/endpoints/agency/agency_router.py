@@ -13,9 +13,7 @@ router = APIRouter(prefix='/agencies',tags=["Agency"])
 user_dependecies = Annotated[User, Depends(get_current_user)]
 
 @router.post("/create", response_model=AgencyCreate, status_code=201)
-async def create_agency_endpoint(agency: AgencyCreate, user:user_dependecies,db: Session = Depends(get_db)):
-    if user.role != 'client':
-        raise HTTPException(status_code=401, detail='You do not have permission to create an agency')
+async def create_agency_endpoint(agency: AgencyCreate,db: Session = Depends(get_db)):
     return await create_agency(db, agency)
 
 @router.get("/list", response_model=list[Agency], status_code=200)

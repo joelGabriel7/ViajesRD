@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Date,Enum
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Date,Enum, Boolean
 from sqlalchemy.orm import relationship
 from data.db import Base
 from sqlalchemy import func
@@ -156,6 +156,7 @@ class Users(Base):
     email = Column(String(length=255), unique=True, nullable=False)
     status = Column(Enum('active', 'inactive', name='status'), default='active')
     role = Column(Enum('agency', 'client', name='role'), default='user')
+ 
     
     ratings = relationship("TouristPlaceRating", back_populates="user")
 

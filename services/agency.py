@@ -13,7 +13,8 @@ async def create_agency(db:Session ,agency: AgencyCreate):
     db.add(new_agency)
     db.commit()
     db.refresh(new_agency)
-    return new_agency    
+    return new_agency   
+ 
 
 async def get_all_agencies(db:Session):
     agencies = db.query(Agencies).all()
