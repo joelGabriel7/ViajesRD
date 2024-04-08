@@ -34,6 +34,13 @@ async def create_user(db: Session, user: UserCreate):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" email already registered")
         user_dict = user.model_dump(exclude={'password'})
         user_dict['hashed_password'] = password 
+        
+        # Handling optional agency_id and client_id
+        if 'agency_id' in user_dict and not user_dict['agency_id']:
+            user_dict.pop('agency_id')  # Remove the key if it's None
+        if 'client_id' in user_dict and not user_dict['client_id']:
+            user_dict.pop('client_id')  # Remove the key if it's None
+
         db_user = users_model(**user_dict)
         db.add(db_user)
         db.commit()

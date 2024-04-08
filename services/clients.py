@@ -3,19 +3,16 @@ from schemas.clients import *
 from models.models import Clients
 from sqlalchemy.orm import Session
 
-from schemas.users import UserCreate
-from .users import create_user
-
 
 async def create_client(db:Session, client:ClientCreate):
     client_exists = db.query(Clients).filter(Clients.email == client.email).first()
-    if client_exists is  None:
+    print(client_exists)
+    if client_exists:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
     new_client= Clients(**client.model_dump())
     db.add(new_client)
     db.commit()
     db.refresh(new_client)
-
     return new_client
 
 async def get_clients(db:Session):

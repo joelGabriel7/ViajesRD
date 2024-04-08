@@ -54,7 +54,7 @@ class Clients(Base):
     address = Column(String(length=255))
     client_code = Column(String(length=150), unique=True, nullable=False)
     
- 
+    users = relationship("Users", back_populates="client")
     reservations = relationship("Reservations", back_populates="client")  # Cambiado de 'reservation' a 'reservations'
 
     created = Column(Date(), default=func.current_date())
@@ -84,12 +84,8 @@ class Agencies(Base):
     logo = Column(String(length=255))
     rnc = Column(String(length=255),unique=True, nullable=False)
     status = Column(Enum('active', 'inactive', name='status'), default='active')
-
-
-    excursions = relationship("Excursions", back_populates="agency")  # Cambiado de 'agencies' a 'agency'
-    # Cambiado de 'user' a 'users'
-
-    
+    excursions = relationship("Excursions", back_populates="agency") 
+    users = relationship("Users", back_populates="agency")     
     created_at = Column(Date(), default=func.current_date())
     updated_at = Column(Date(), default=func.current_date())
 
@@ -126,9 +122,9 @@ class Excursions(Base):
     agency_id = Column(Integer, ForeignKey('agencies.id'))
     tourist_place_id = Column(Integer, ForeignKey('tourist_places.id'))
 
-    agency = relationship("Agencies", back_populates="excursions")  # Cambiado de 'agencies' a 'agency'
+    agency = relationship("Agencies", back_populates="excursions")  
     tourist_place = relationship("TouristPlace", back_populates="excursions")
-    reservations = relationship("Reservations", back_populates="excursion")  # Cambiado de 'reservation' a 'reservations'
+    reservations = relationship("Reservations", back_populates="excursion")  
     # payments = relationship("Payments", backref="excursion")
 
     created = Column(DateTime(), default=func.current_date())
@@ -143,8 +139,6 @@ class Payments(Base):
     payment_method = Column(String(length=150), default='cash')
     date_payment = Column(DateTime(), default=func.current_date())
     reservation_id = Column(Integer, ForeignKey('reservations.id'))
-    # excursion_id = Column(Integer, ForeignKey('excursions.id'))
-
     reservation = relationship("Reservations", back_populates="payment")
 
 class Users(Base):
@@ -156,8 +150,11 @@ class Users(Base):
     email = Column(String(length=255), unique=True, nullable=False)
     status = Column(Enum('active', 'inactive', name='status'), default='active')
     role = Column(Enum('agency', 'client', name='role'), default='user')
- 
-    
+    agency_id = Column(Integer, ForeignKey('agencies.id'), nullable=True)
+    client_id = Column(Integer, ForeignKey('clients.id'), nullable=True)
+
+    agency = relationship("Agencies", back_populates="users", uselist=False)
+    client = relationship("Clients", back_populates="users", uselist=False)
     ratings = relationship("TouristPlaceRating", back_populates="user")
 
     created = Column(Date(), default=func.current_date())

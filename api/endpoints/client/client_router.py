@@ -9,9 +9,7 @@ from services.clients import *
 router = APIRouter(prefix='/clients', tags=['Clients'])
 user_dependecies = Annotated[User, Depends(get_current_user)]
 @router.post('/create', status_code=status.HTTP_201_CREATED, response_model=ClientCreate)
-async def create_client_endpoint(client:ClientCreate, user:user_dependecies,db:Session=Depends(get_db)):
-    if user.role != 'client':
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to create a client')
+async def create_client_endpoint(client:ClientCreate,db:Session=Depends(get_db)):
     return await create_client(db, client)
 
 @router.get('/list', response_model=list[Client],status_code=status.HTTP_200_OK)
