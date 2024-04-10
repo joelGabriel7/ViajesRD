@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter,Depends, HTTPException
 from sqlalchemy.orm import Session
 from schemas.users import User
-from services.agency import create_agency, delete_agency, get_all_agencies, get_agency_by_id, get_ten_agencies, update_agency
+from services.agency import create_agency, delete_agency, get_agencie_by_rnc, get_all_agencies, get_agency_by_id, get_ten_agencies, update_agency
 from data.db import *
 from schemas.agency import AgencyUpdate,AgencyCreate, Agency
 from api.deps.get_db import get_db
@@ -27,6 +27,10 @@ async def get_ten_agencies_endpoint(skip: int = 0, limit: int = 10, db: Session 
 @router.get("/{agency_id}", response_model=Agency, status_code=200)
 async def get_agency_by_id_endpoint(agency_id: int, db: Session = Depends(get_db)):
     return await get_agency_by_id(db, agency_id)
+
+@router.get("/rnc/{rnc}", response_model=Agency, status_code=200)
+async def get_agencie_by_rnc_endpoint(rnc:str, db:Session = Depends(get_db)):
+    return await get_agencie_by_rnc(db, rnc)
 
 @router.put("/{agency_id}", response_model=AgencyUpdate, status_code=200)
 async def update_agency_endpoint(agency_id: int, agency: AgencyUpdate, user:user_dependecies,db: Session = Depends(get_db)):

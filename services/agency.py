@@ -14,6 +14,12 @@ async def create_agency(db:Session ,agency: AgencyCreate):
     db.commit()
     db.refresh(new_agency)
     return new_agency   
+
+async def get_agencie_by_rnc(db:Session, rnc:str):
+    agency = db.query(Agencies).filter(Agencies.rnc==rnc).first()
+    if agency is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agency not found")
+    return agency
  
 
 async def get_all_agencies(db:Session):
