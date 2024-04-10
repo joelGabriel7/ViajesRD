@@ -50,6 +50,7 @@ async def create_user(db: Session, user: UserCreate):
         db.rollback()  
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Database integrity error. {e}")
     except Exception as e:
+        print(f'ERROR AL  CREAR USER: {e}')
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return user
 
