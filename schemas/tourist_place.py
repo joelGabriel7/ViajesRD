@@ -44,7 +44,7 @@ class TouristPlaceWithCategory(TouristPlaceBase):
         else:
             return 0.0
 
-class TouristPlace(TouristPlaceBase):   
+class TouristPlaceSchema(TouristPlaceBase):   
     id: int
     created: datetime
     updated: datetime

@@ -10,6 +10,7 @@ class TokenData(BaseModel):
     id: int
     username: str
     role: str  
-    agency_id: int
-    client_id: int
+    agency_id: Optional[int] = None
+    client_id: Optional[int] = None
+
 	

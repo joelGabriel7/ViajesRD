@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from api.deps.get_db import get_db
-from schemas.tourist_place import TouristPlaceCreate,TouristPlaceUpdate, TouristPlace, TouristPlaceWithCategory, TouristPlaceImage as image_schema
+from schemas.tourist_place import TouristPlaceCreate,TouristPlaceUpdate, TouristPlaceSchema, TouristPlaceWithCategory, TouristPlaceImage as image_schema
 from schemas.users import User
 from services.auth.autentication import get_current_user
-from services.tourist_place import create_tourist_place, get_all_tourist_place, get_tourist_place_by_categories, get_tourist_place_by_id, rate_tourist_place,  update_tourist_place, delete_tourist_place
+from services.tourist_place import *
 import os
 
 from models.models import TouristPlaceImage
@@ -15,7 +15,7 @@ from models.models import TouristPlaceImage
 router = APIRouter(prefix='/tourist_place', tags=['Tourist Place']) 
 user_dependecies = Annotated[User, Depends(get_current_user)]
 
-@router.post('/create', response_model=TouristPlace, status_code=status.HTTP_201_CREATED)
+@router.post('/create', response_model=TouristPlaceSchema, status_code=status.HTTP_201_CREATED)
 async def create_tourist_place_endpoint(tourist_place:TouristPlaceCreate, user:user_dependecies,db:Session = Depends(get_db)):
     if user.role != 'agency':
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to create a tourist place')
@@ -25,11 +25,15 @@ async def create_tourist_place_endpoint(tourist_place:TouristPlaceCreate, user:u
 async def tourist_place_list_endpoint(db:Session = Depends(get_db)):
     return await  get_all_tourist_place(db)
 
+@router.get('/search/',status_code=status.HTTP_200_OK)
+async def search_tourist_place_endpoint(search:str, db:Session=Depends(get_db)):    
+    return await search_tourist_place_and_category(db,search)
+
 @router.get('/{tourist_place_id}', response_model=TouristPlaceWithCategory,status_code=status.HTTP_200_OK)
 async def get_tourist_place_by_id_endpoint(tourist_place_id:int, db:Session = Depends(get_db)):
     return await get_tourist_place_by_id(db,tourist_place_id)
 
-@router.get('/{categories}/tourist_places', response_model=list[TouristPlaceWithCategory],status_code=status.HTTP_200_OK)
+@router.get('/{categories}/tourist_places', response_model=list[TouristPlaceWithCategory] ,status_code=status.HTTP_200_OK)
 async def get_tourist_place_by_category_endpoint(categories:int, db:Session = Depends(get_db)):
     return await get_tourist_place_by_categories(db,categories)
 

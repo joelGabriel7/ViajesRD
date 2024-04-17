@@ -1,5 +1,5 @@
-from schemas.tourist_place import TouristPlaceCreate, TouristPlaceUpdate,TouristPlace
-from models.models import TouristPlace, TouristPlaceImage, TouristPlaceRating
+from schemas.tourist_place import TouristPlaceCreate, TouristPlaceUpdate,TouristPlaceSchema
+from models.models import Categories, TouristPlace, TouristPlaceImage, TouristPlaceRating
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload
@@ -90,3 +90,11 @@ async def rate_tourist_place(db:Session, tourist_place_id:int, rating:int, user_
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     return new_rating.rating
+
+
+async def search_tourist_place_and_category(db:Session, search:str):
+    tourist_place = db.query(TouristPlace).join(TouristPlace.category).filter((TouristPlace.name.ilike(f'%{search}%')) |(TouristPlace.location.ilike(f'%{search}%')) | (Categories.name.ilike(f'%{search}%'))).all()
+    if tourist_place is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tourist place not found")
+    
+    return tourist_place
