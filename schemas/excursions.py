@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import date, datetime
 
-from schemas.tourist_place import CategoryName
+from schemas.tourist_place import CategoryName, TouristPlaceImage
 
 
 class ExcusionsBase(BaseModel):
@@ -24,8 +24,8 @@ class AgencyName(BaseModel):
 class TouristPlaceForExcursion(BaseModel):
     name: str
     location: str
-    category: CategoryName
-
+    images: Optional[list[TouristPlaceImage]] = []
+    
 class ExcursionWithGanancias(ExcusionsBase):
     total_ganancias: float
     agency: AgencyName
