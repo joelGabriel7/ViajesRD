@@ -32,7 +32,7 @@ def authenticate_user( username: str,password:str, db: Session = Depends(get_db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Usuario no encontrado')
     if not verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='contraseña incorrecta')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='password incorrecta')
     return user
 
 def create_access_token(data:dict, expires_delta: Union[timedelta,None] = None):
@@ -57,11 +57,12 @@ async def get_current_user(token:Annotated[str, Depends(oauth2_scheme)]):
         username  = payload.get('username')
         user_role = payload.get('role')
         user_id = payload.get('id')
-        
+        user_agency_id = payload.get('agency_id')
+        user_client_id = payload.get('client_id')
         if username is None or user_role is None:
          raise credential_exception
 
-        token_data = TokenData(username=username,role=user_role, id=user_id)
+        token_data = TokenData(username=username,role=user_role, id=user_id, agency_id=user_agency_id, client_id=user_client_id )
         return token_data
     except JWTError:
         raise credential_exception  
