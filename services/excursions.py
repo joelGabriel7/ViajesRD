@@ -38,33 +38,35 @@ async def get_excursion_to_delete(db:Session,excursion_id:int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
     return excursion
 
-
 async def get_excursion_by_id(db: Session, excursion_id: int):
-
     excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).options(joinedload(excursions_model.tourist_place), joinedload(excursions_model.agency)).first()
     if not excursion:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
     agency = excursion.agency
-
-
-    
     total_ganancias = calculate_total_ganancias_for_excursion(db, excursion_id)
+    places = excursion.tourist_place
+    data_tourist_place = {
+        "name": places.name,
+        "location": places.location,
+        "images": places.images
+    }
+    tourist_place_instance = TouristPlaceForExcursion(**data_tourist_place)
     agency_dict = {c.key: getattr(agency, c.key) for c in sqlalchemy.inspect(agency).mapper.column_attrs}
-
-  
-    agency_name = AgencyName(**agency_dict)
-    excursion_data = create_excursion_data(excursion, total_ganancias, agency=agency_name)
+    agency_instance = AgencyName(**agency_dict)
+    excursion_data = ExcursionWithGanancias(
+        **{**excursion.__dict__, "total_ganancias": total_ganancias, "agency": agency_instance, "tourist_place": tourist_place_instance}
+    )
     return excursion_data
 
-def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName):
-    try:
-        excursion_dict = excursion.__dict__
-        excursion_dict.update({"total_ganancias": total_ganancias, "agency": agency})
-        excursion_data = ExcursionWithGanancias(**excursion_dict)
-    except ValidationError as e:
-        # Manejar posibles errores de validación
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    return excursion_data
+# def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName):
+#     try:  
+#         excursion_dict = excursion.__dict__
+#         excursion_dict.update({"total_ganancias": total_ganancias, "agency": agency})
+#         excursion_data = ExcursionWithGanancias(**excursion_dict)
+#     except ValidationError as e:
+#         # Manejar posibles errores de validación
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+#     return excursion_data
 
 
 async def update_excursion(db: Session, excursion_id: int, excursion_data: ExcursionsUpdate):

@@ -29,6 +29,7 @@ class TouristPlaceForExcursion(BaseModel):
 class ExcursionWithGanancias(ExcusionsBase):
     total_ganancias: float
     agency: AgencyName
+    tourist_place: TouristPlaceForExcursion
 
     class Config:
         # orm_mode = True

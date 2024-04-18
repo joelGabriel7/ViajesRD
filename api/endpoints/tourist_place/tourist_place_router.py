@@ -25,7 +25,6 @@ async def create_tourist_place_endpoint(tourist_place:TouristPlaceCreate, user:u
 async def tourist_place_list_endpoint(db:Session = Depends(get_db)):
     return await  get_all_tourist_place(db)
 
-
 @router.get('/search/',response_model=list[TouristPlaceWithCategory],status_code=status.HTTP_200_OK)
 async def search_tourist_place_endpoint(search:str, db:Session=Depends(get_db)):    
     return await search_tourist_place_and_category(db,search)
