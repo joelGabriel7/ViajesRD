@@ -58,17 +58,6 @@ async def get_excursion_by_id(db: Session, excursion_id: int):
     )
     return excursion_data
 
-# def create_excursion_data(excursion: excursions_model, total_ganancias: float, agency:AgencyName):
-#     try:  
-#         excursion_dict = excursion.__dict__
-#         excursion_dict.update({"total_ganancias": total_ganancias, "agency": agency})
-#         excursion_data = ExcursionWithGanancias(**excursion_dict)
-#     except ValidationError as e:
-#         # Manejar posibles errores de validación
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-#     return excursion_data
-
-
 async def update_excursion(db: Session, excursion_id: int, excursion_data: ExcursionsUpdate):
     
     excursion = db.query(excursions_model).filter(excursions_model.id == excursion_id).first() 

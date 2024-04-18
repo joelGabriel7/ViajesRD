@@ -17,7 +17,6 @@ class ClientName(BaseModel):
     email:EmailStr   
 
 class ReservationBase(BaseModel):
-    id: int
     date_reservation: Optional[date] = date(2000,1,1)
     number_of_places: int
     status: ReservationsEnum =  ReservationsEnum.pending

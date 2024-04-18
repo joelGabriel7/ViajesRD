@@ -11,12 +11,10 @@ router = APIRouter(prefix='/reservations', tags=['Reservations'])
 user_dependecies = Annotated[User, Depends(get_current_user)]
 
 @router.post('/create', response_model=ReservationCreate,status_code = status.HTTP_200_OK)
-async def create_reservation_endpoint(reservation: ReservationBase, user:user_dependecies,db: Session = Depends(get_db)):
-    if user.role != 'client':
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='You do not have permission to create a reservation')
-    return await create_reservation(db, reservation, Excursions)
+async def create_reservation_endpoint(reservation: ReservationBase,db: Session = Depends(get_db)):
+    return await create_reservation(db, reservation)
 
-@router.get('/all', response_model=list[ReservationBase], status_code = status.HTTP_200_OK)
+@router.get('/all', response_model=list[Reservation], status_code = status.HTTP_200_OK)
 async def get_all_reservations_endpoint(db:Session = Depends(get_db)):
     return await get_all_reservations(db)
 

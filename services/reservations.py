@@ -1,7 +1,9 @@
+from schemas.payments import PaymentMethod, PaymentStatus
 from schemas.reservations import *
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models.models import Excursions, Payments, Reservations
+from sqlalchemy.exc import SQLAlchemyError
 
 
 async def get_excursion_by_id(db: Session, excursion_id: int):
@@ -10,23 +12,46 @@ async def get_excursion_by_id(db: Session, excursion_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Excursion not found")
     return excursion
 
-async def create_reservation(db: Session, request: ReservationCreate, excursion: Excursions):
-    excursion= await get_excursion_by_id(db, request.excursion_id)
-    
+async def create_reservation(db: Session, request: ReservationCreate):
+    excursion = db.query(Excursions).filter(Excursions.id == request.excursion_id).first()
+    if not excursion:
+        raise HTTPException(status_code=404, detail="Excursion not found")
+
     if request.number_of_places < 1:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The number of places must be greater than 0")
-    
+        raise HTTPException(status_code=400, detail="The number of places must be greater than 0")
+
     if excursion.available_places < request.number_of_places:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough available places in the excursion")
-    
-    new_reservation = Reservations(**request.model_dump())
-    excursion.available_places -= request.number_of_places
-    
-    db.add(new_reservation)
-    db.commit()
-    db.refresh(new_reservation)
-    db.commit()
-    return new_reservation
+        raise HTTPException(status_code=400, detail="Not enough available places")
+
+    try:
+        # Create and save the reservation
+        new_reservation = Reservations(
+            date_reservation=request.date_reservation,
+            number_of_places=request.number_of_places,
+            status='pending',  # Make sure your enum accepts this string directly
+            client_id=request.client_id,
+            excursion_id=request.excursion_id
+        )
+        db.add(new_reservation)
+        excursion.available_places -= request.number_of_places
+        db.commit()
+        db.refresh(new_reservation)
+
+        # Create payment
+        new_payment = Payments(
+            amount=request.number_of_places * excursion.price,
+            status='pending',
+            reservation_id=new_reservation.id
+        )
+        db.add(new_payment)
+        db.commit()
+        db.refresh(new_payment)
+        print(f'New reservation: {new_reservation.excursion}')
+        return new_reservation
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 async def get_all_reservations(db: Session):
     return db.query(Reservations).all()
