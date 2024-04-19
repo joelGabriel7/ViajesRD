@@ -90,23 +90,34 @@ class Agencies(Base):
     updated_at = Column(Date(), default=func.current_date())
 
 class Reservations(Base):
-    __tablename__ = "reservations"
-
-    id = Column(Integer, primary_key=True, index=True)
+    __tablename__ = 'reservations'
     
-    date_reservation = Column(Date(), default=func.current_date())
-    number_of_places = Column(Integer, default=0)
-    status = Column(Enum('pending', 'confirmed', 'cancelled', name='status'), default='pending')
-
+    id = Column(Integer, primary_key=True)
     client_id = Column(Integer, ForeignKey('clients.id'))
+    date_reservation = Column(DateTime(), default=func.current_timestamp())
+    total_amount = Column(Float, default=0.0)
+    client = relationship("Clients", back_populates="reservations")
+    reservation_details = relationship("ReservationDetails", back_populates="reservation", cascade="all, delete-orphan")
+    payments = relationship("Payments", back_populates="reservation", cascade="all, delete-orphan")
+
+    created_at = Column(DateTime(), default=func.current_timestamp())
+    updated_at = Column(DateTime(), default=func.current_timestamp(), onupdate=func.current_timestamp())
+
+class ReservationDetails(Base):
+    __tablename__ = 'reservation_details'
+    
+    id = Column(Integer, primary_key=True)
+    reservation_id = Column(Integer, ForeignKey('reservations.id'))
     excursion_id = Column(Integer, ForeignKey('excursions.id'))
+    quantity = Column(Integer)
+    price = Column(Float)
+    status =Column(Integer, default=1)
+    
+    reservation = relationship("Reservations", back_populates="reservation_details")
+    excursion = relationship("Excursions", back_populates="reservation_details")
+    
 
-    client = relationship("Clients", back_populates="reservations")  
-    excursion = relationship("Excursions", back_populates="reservations")  
-    payment = relationship("Payments", back_populates="reservation")
 
-    created = Column(DateTime(), default=func.current_timestamp(), onupdate=func.current_timestamp())
-    updated = Column(DateTime(), default=func.current_timestamp(), onupdate=func.current_timestamp())
 
 class Excursions(Base):
 
@@ -124,22 +135,22 @@ class Excursions(Base):
 
     agency = relationship("Agencies", back_populates="excursions")  
     tourist_place = relationship("TouristPlace", back_populates="excursions")
-    reservations = relationship("Reservations", back_populates="excursion")  
-    # payments = relationship("Payments", backref="excursion")
+    reservation_details = relationship("ReservationDetails", cascade="all, delete-orphan", back_populates="excursion")
 
     created = Column(DateTime(), default=func.current_date())
     updated = Column(DateTime(), default=func.current_date())
     
 class Payments(Base):
-    __tablename__ = "payments"
+    __tablename__ = 'payments'
 
-    id = Column(Integer, primary_key=True, index=True)
-    amount = Column(Integer, default=0)
-    status = Column(String(length=150), default='pending')
-    payment_method = Column(String(length=150), default='cash')
-    date_payment = Column(DateTime(), default=func.current_date())
-    reservation_id = Column(Integer, ForeignKey('reservations.id'))
-    reservation = relationship("Reservations", back_populates="payment")
+    id = Column(Integer, primary_key=True)
+    reservation_id = Column(Integer, ForeignKey('reservations.id'), nullable=False)
+    amount = Column(Float, nullable=False)
+    payment_method = Column(String(255), nullable=False)
+    payment_date = Column(DateTime(), default=func.current_timestamp())
+    status = Column(Integer, default=1)
+    reservation = relationship("Reservations", back_populates="payments")
+
 
 class Users(Base):
     __tablename__ = "users"

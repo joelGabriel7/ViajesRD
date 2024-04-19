@@ -18,6 +18,8 @@ async def get_payments_list(user:user_dependecies,db: Session = Depends(get_db))
     payments = db.query(Payments).all()
     if not payments:
         raise HTTPException(status_code=404, detail="Payments do not exist")
+    for payment in payments:
+        payment.payment_date = payment.payment_date.date()  
     return payments
 
 

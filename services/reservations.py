@@ -1,8 +1,8 @@
 from schemas.payments import PaymentMethod, PaymentStatus
 from schemas.reservations import *
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
-from models.models import Excursions, Payments, Reservations
+from sqlalchemy.orm import Session,joinedload
+from models.models import Excursions, Payments, ReservationDetails, Reservations
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -13,97 +13,76 @@ async def get_excursion_by_id(db: Session, excursion_id: int):
     return excursion
 
 async def create_reservation(db: Session, request: ReservationCreate):
-    excursion = db.query(Excursions).filter(Excursions.id == request.excursion_id).first()
-    if not excursion:
-        raise HTTPException(status_code=404, detail="Excursion not found")
+    excursion_ids = [detail.excursion_id for detail in request.reservations_details]
+    excursions = db.query(Excursions).filter(Excursions.id.in_(excursion_ids)).all()
 
-    if request.number_of_places < 1:
-        raise HTTPException(status_code=400, detail="The number of places must be greater than 0")
-
-    if excursion.available_places < request.number_of_places:
-        raise HTTPException(status_code=400, detail="Not enough available places")
+    if len(excursions) != len(set(excursion_ids)):
+        raise HTTPException(status_code=404, detail="One or more excursions not found")
 
     try:
-        # Create and save the reservation
         new_reservation = Reservations(
-            date_reservation=request.date_reservation,
-            number_of_places=request.number_of_places,
-            status='pending',  # Make sure your enum accepts this string directly
             client_id=request.client_id,
-            excursion_id=request.excursion_id
+            date_reservation=request.date_reservation,
+            total_amount=0.0
         )
         db.add(new_reservation)
-        excursion.available_places -= request.number_of_places
-        db.commit()
-        db.refresh(new_reservation)
+        db.flush()
 
-        # Create payment
-        new_payment = Payments(
-            amount=request.number_of_places * excursion.price,
-            status='pending',
-            reservation_id=new_reservation.id
+        total_amount = 0.0
+        formatted_details = []
+        for detail in request.reservations_details:
+            excursion = next((exc for exc in excursions if exc.id == detail.excursion_id), None)
+            if not excursion or excursion.available_places < detail.quantity:
+                db.rollback()
+                raise HTTPException(status_code=400, detail=f"Insufficient places for excursion ID {detail.excursion_id}")
+
+            excursion.available_places -= detail.quantity
+            total_amount += detail.quantity * excursion.price
+
+            new_detail = ReservationDetails(
+                reservation_id=new_reservation.id,
+                excursion_id=detail.excursion_id,
+                quantity=detail.quantity,
+                price=excursion.price
+            )
+            db.add(new_detail)
+            formatted_details.append({
+                "excursion_id": detail.excursion_id,
+                "quantity": detail.quantity
+            })
+
+        new_reservation.total_amount = total_amount
+        db.add(new_reservation)
+
+        payments = Payments(
+            reservation_id=new_reservation.id,
+            amount=total_amount,
+            payment_method='cash',
+            status=1
         )
-        db.add(new_payment)
+        db.add(payments)
         db.commit()
-        db.refresh(new_payment)
-        print(f'New reservation: {new_reservation.excursion}')
-        return new_reservation
+
+        reservation_order_data = {
+            "date_reservation": new_reservation.date_reservation.isoformat(),   
+            "client_id": new_reservation.client_id,
+            "total_amount": total_amount,
+            "reservations_details": formatted_details
+        }
+        return ReservationBase.parse_obj(reservation_order_data)
+
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-
-async def get_all_reservations(db: Session):
-    return db.query(Reservations).all()
+def get_all_reservations(db: Session) -> List[ReservationSchema]:
+    reservations = db.query(Reservations).options(
+        joinedload(Reservations.reservation_details)  
+    ).all()
+    return [ReservationSchema.from_orm(res) for res in reservations]
 
 async def get_reservation_by_id(db: Session, reservation_id: int):
     reservation = db.query(Reservations).filter(Reservations.id == reservation_id).first()
     if not reservation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservation not found")
     return reservation 
-
-async def get_reservations_by_excursion_id(db: Session, excursion_id: int):
-    reservations = db.query(Reservations).filter(Reservations.excursion_id == excursion_id).all()
-    if not reservations:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservations not found")
-    return reservations
-
-async def get_reservations_by_limit(db: Session, skip:int = 0, limit: int=10):
-    reservations = db.query(Reservations).offset(skip).limit(limit).all()
-    if not reservations:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservations not found")
-    return reservations
-
-async def update_reservations (db:Session,reservation_id:int,  reservationUpdate:ReservationUpdate):
-    reservation = await get_reservation_by_id(db,reservation_id)
-    for key, value in vars(reservationUpdate).items(): 
-        if value:
-            setattr(reservation, key, value)
-        else:
-            return None
-    db.commit()
-    db.refresh(reservation)
-    return reservation
-
-async def delete_reservation(db:Session, reservation_id:int):
-    reservation = await get_reservation_by_id(db,reservation_id)
-    db.delete(reservation)
-    db.commit()
-    return {'Reservation deleted':reservation}
-
-
-async def confirm_reservation_and_initiate_payment(reservation_id:int, db:Session):
-    reservation = await get_reservation_by_id(db,reservation_id)
-    amount = reservation.number_of_places * reservation.excursion.price
-    x = reservation.excursion.tourist_place.name
-    print(x)
-    
-    new_payment = Payments(
-            amount=amount, 
-            reservation_id=reservation_id,
-            status = 'pending'
-          )
-    db.add(new_payment)
-    db.commit()
-    db.refresh(new_payment)
-    return new_payment

@@ -4,12 +4,12 @@ import sqlalchemy
 from schemas.excursions import *
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
-from models.models import Excursions as excursions_model, Payments, Reservations
+from models.models import Excursions as excursions_model, Payments, Reservations,ReservationDetails
 from api.deps.helpers.filter_agency_and_tourist_place import validate_agency_exites, validate_tourist_place_exites
 
 
 def calculate_total_ganancias_for_excursion(db: Session, excursion_id: int) -> float:
-    total_ganancias = db.query(func.sum(Payments.amount)).join(Reservations, Payments.reservation_id == Reservations.id).filter(Reservations.excursion_id == excursion_id).scalar() or 0.0
+    total_ganancias = db.query(func.sum(Payments.amount)).join(ReservationDetails, Payments.reservation_id == ReservationDetails.id).filter(ReservationDetails.excursion_id == excursion_id).scalar() or 0.0
     return total_ganancias
 
 async def create_excursion(db:Session, excursion:ExcursionsCreate):
@@ -22,6 +22,7 @@ async def create_excursion(db:Session, excursion:ExcursionsCreate):
         db.commit()
         db.refresh(new_excursion)
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return new_excursion
 

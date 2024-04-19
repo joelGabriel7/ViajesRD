@@ -16,9 +16,9 @@ class PaymentMethod(str, Enum):
 
 class PaymentBase(BaseModel):
     amount: float
-    status: PaymentStatus = PaymentStatus.pending
+    status: int
     payment_method: PaymentMethod = PaymentMethod.cash
-    date_payment: Optional[date] = None
+    payment_date: Optional[date] = date(2000,1,1)
     reservation_id: int
 
 class Payment(PaymentBase):

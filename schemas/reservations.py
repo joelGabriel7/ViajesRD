@@ -1,31 +1,25 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional,List
 from pydantic import BaseModel, EmailStr,Field
 from datetime import date, datetime
 
 
-class ReservationsEnum(str,Enum):
-    pending = 'pending'
-    confirmed = 'confirmed'
-    cancelled = 'cancelled'
 
+class ReservationDetailsSchema(BaseModel):
+    excursion_id: int
+    quantity: int
 
-
-class ClientName(BaseModel):
-    first_name: str
-    last_name: str
-    email:EmailStr   
+    class Config:
+        from_attributes = True
+    
 
 class ReservationBase(BaseModel):
     date_reservation: Optional[date] = date(2000,1,1)
-    number_of_places: int
-    status: ReservationsEnum =  ReservationsEnum.pending
     client_id: int
-    excursion_id: int
+    reservations_details: list[ReservationDetailsSchema]
 
-class ReservationWithClient(ReservationBase):
-    client:ClientName
-
+    class Config:
+        from_attributes = True
 
 class ReservationCreate(ReservationBase):
     pass
@@ -36,8 +30,25 @@ class Reservation(ReservationBase):
     updated: datetime
 
     class Config:
-        from_atributtes = True
-
+        from_attributes = True
 class ReservationUpdate(ReservationBase):
     pass
+
+
+class ReservationDetailSchema(BaseModel):
+    excursion_id: int
+    quantity: int
+    price: float
+
+    class Config:
+        from_attributes = True
+
+class ReservationSchema(BaseModel):
+    id: int
+    date_reservation: datetime
+    total_amount: float
+    reservation_details: List[ReservationDetailSchema]
+
+    class Config:
+        from_attributes = True
 
